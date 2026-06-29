@@ -378,9 +378,12 @@
 
     function getApiUrl(path) {
       const loc = window.location;
-      // Se estiver acessando via sub-caminho /admin (Proxy do site principal)
+      // Se estiver acessando via sub-caminho /admin ou pelo subdominio sentinelk.unycopass.com.br
       if (loc.pathname.startsWith('/admin')) {
         return '/admin/api' + path;
+      }
+      if (loc.hostname === 'sentinelk.unycopass.com.br') {
+        return '/api' + path;
       }
       // Se acessar direto via portas no ambiente de dev ou direto na EC2
       return `${loc.protocol}//${loc.hostname}:3333/api${path}`;

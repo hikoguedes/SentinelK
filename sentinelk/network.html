@@ -576,6 +576,9 @@
       if (loc.pathname.startsWith('/admin')) {
         return '/admin/api' + path;
       }
+      if (loc.hostname === 'sentinelk.unycopass.com.br') {
+        return '/api' + path;
+      }
       return `${loc.protocol}//${loc.hostname}:3333/api${path}`;
     }
 

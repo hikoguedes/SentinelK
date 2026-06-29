@@ -13,7 +13,9 @@
   if (currentScript && currentScript.src) {
     try {
       const url = new URL(currentScript.src);
-      if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+      if (url.hostname === 'sentinelk.unycopass.com.br') {
+        apiHost = 'https://sentinelk.unycopass.com.br/api';
+      } else if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
         // Se estiver rodando na EC2 ou outro domínio
         apiHost = `${url.protocol}//${url.hostname}:3333/api`;
       }
