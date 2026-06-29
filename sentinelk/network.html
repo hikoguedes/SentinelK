@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - Rede de Integrações</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .network-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 24px;
+    }
+    @media (max-width: 1024px) {
+      .network-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .connection-card {
+      padding: 20px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .modal-tab {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      padding-bottom: 6px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .modal-tab.active-tab {
+      color: var(--accent-purple) !important;
+      border-color: var(--accent-purple) !important;
+    }
+    .modal-tab:hover {
+      color: var(--text-main);
+    }
+    .connection-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-purple);
+      background: rgba(139, 92, 246, 0.05);
+    }
+    body.light-theme .connection-card {
+      background: rgba(0, 0, 0, 0.02);
+    }
+    body.light-theme .connection-card:hover {
+      background: rgba(139, 92, 246, 0.05);
+    }
+
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .icon-box.green { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+    .icon-box.blue { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
+    .icon-box.purple { background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); }
+    .icon-box.orange { background: rgba(245, 158, 11, 0.1); color: var(--accent-orange); }
+
+    .pulse-green {
+      animation: pulse-green-anim 1.5s infinite alternate;
+    }
+    @keyframes pulse-green-anim {
+      0% { box-shadow: 0 0 4px rgba(74, 222, 128, 0.4); }
+      100% { box-shadow: 0 0 16px rgba(74, 222, 128, 0.9); }
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+    .modal-content {
+      background: var(--bg-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 600px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+    body.light-theme .modal-content {
+      background: #ffffff;
+    }
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+    .close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .close-btn:hover {
+      color: var(--accent-purple);
+    }
+    .api-product-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar-heading {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 16px 0 8px 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container animate-fade">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="../logo.png" alt="SentinelK Logo" style="height: 32px; width: auto; object-fit: contain;">
+          <span style="font-weight: 800; font-size: 1.3rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Admin</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Portal do Administrador</p>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px;">
+        <!-- CATEGORIA: GERAL -->
+        <div class="sidebar-heading" style="margin-top:0;" data-role="superadmin">Geral</div>
+        <div class="nav-item" data-role="superadmin" onclick="window.location.href='../partner/b2b.html'"><i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>Visão Geral (Admin)</div>
+
+        <!-- CATEGORIA: NÚCLEO SENTINELK -->
+        <div class="sidebar-heading" data-role="superadmin">Núcleo SentinelK</div>
+        <div class="nav-item" id="nav-item-sentinelk-dash" data-role="superadmin" onclick="window.location.href='../sentinelk/dashboard.html'"><i data-lucide="activity" style="width: 18px; height: 18px;"></i>SentinelK Dashboard</div>
+        <div class="nav-item active" id="nav-item-sentinelk-network" data-role="superadmin" onclick="window.location.href='../sentinelk/network.html'"><i data-lucide="network" style="width: 18px; height: 18px;"></i>Rede de Integrações</div>
+        <div class="nav-item" id="nav-item-sentinelk-onboarding" data-role="superadmin" onclick="window.location.href='../sentinelk/ai-onboarding.html'"><i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>Onboarding de IA</div>
+        <div class="nav-item" id="nav-item-sentinelk-recursos" data-role="superadmin" onclick="window.location.href='../sentinelk/recursos.html'"><i data-lucide="sliders" style="width: 18px; height: 18px;"></i>Parceiros e Recursos</div>
+
+        <!-- CATEGORIA: GESTÃO B2B -->
+        <div class="sidebar-heading" data-role="superadmin">Gestão B2B</div>
+        <div class="nav-item" id="nav-item-gerenciar-parceiros" data-role="superadmin" onclick="window.location.href='../partner/gerenciar-parceiros.html'"><i data-lucide="users" style="width: 18px; height: 18px;"></i>Gerenciar Parceiros</div>
+        <div class="nav-item" id="nav-item-cadastro-parceiro" data-role="superadmin" onclick="window.location.href='../partner/cadastro-parceiro.html'"><i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>Credenciar Parceiro</div>
+        <div class="nav-item" id="nav-item-monitor-vendas" data-role="superadmin" onclick="window.location.href='../partner/monitor-vendas.html'"><i data-lucide="bar-chart-3" style="width: 18px; height: 18px;"></i>Monitor de Vendas</div>
+
+        <!-- CATEGORIA: EXTRANET (PARCEIROS) -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Extranet (Visão Parceiro)</div>
+        <div class="nav-item" id="nav-item-resumo" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=resumo'"><i data-lucide="store" style="width: 18px; height: 18px;"></i>Painel Operacional</div>
+        <div class="nav-item" id="nav-item-produtos" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-setup.html'"><i data-lucide="package" style="width: 18px; height: 18px;"></i>Catálogo de Produtos</div>
+        <div class="nav-item" id="nav-item-calendario" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=calendario'"><i data-lucide="calendar" style="width: 18px; height: 18px;"></i>Estoque & Lotes</div>
+        <div class="nav-item" id="nav-item-validador" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=validador'"><i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>Validador de Voucher</div>
+        <div class="nav-item" id="nav-item-financeiro" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=financeiro'"><i data-lucide="wallet" style="width: 18px; height: 18px;"></i>Extrato Financeiro</div>
+        <div class="nav-item" id="nav-item-perfil" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=perfil'"><i data-lucide="user" style="width: 18px; height: 18px;"></i>Dados Cadastrais</div>
+
+        <!-- CATEGORIA: CANAIS B2C -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Canais B2C</div>
+        <div class="nav-item" onclick="window.open('../index.html', '_blank')"><i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>Marketplace B2C <i data-lucide="external-link" style="width: 12px; height: 12px; margin-left: auto;"></i></div>
+      </nav>
+      
+      <div style="margin-top: auto; padding: 16px; background: rgba(139, 92, 246, 0.05); border-radius: var(--border-radius-md); border: 1px solid rgba(139, 92, 246, 0.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Logado como:<br><strong id="session-username">Aguardando...</strong></p>
+        <button onclick="logoutSession()" style="width: 100%; padding: 6px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; border-style: solid;">
+          <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1>Rede de Integrações</h1>
+          <p class="subtitle" style="margin: 0;">Visão arquitetural do hub de APIs: Fornecedores (Origem) vs Distribuidores (Destino).</p>
+        </div>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <!-- Active Status -->
+          <span class="status-badge status-confirmed pulse-green" style="font-size: 0.85rem; padding: 6px 14px; font-weight: 700; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <i data-lucide="zap" style="width:14px; height:14px; vertical-align: middle;"></i> APIs Rodando Liso
+          </span>
+
+          <!-- Theme Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+            <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+            <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="network-grid">
+        
+        <!-- Left Column: INBOUND -->
+        <div class="glass-panel" style="padding: 32px; position: relative;">
+          <!-- Visual Connector -->
+          <div style="position: absolute; right: -32px; top: 50%; width: 32px; height: 2px; background: var(--gradient-primary); z-index: -1;"></div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px; gap: 8px; flex-wrap: wrap;">
+            <h2 style="margin:0; font-size: 1.4rem; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="database" style="color: var(--accent-blue);"></i> Fornecedores (Inbound)
+            </h2>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button onclick="window.location.href='ai-onboarding.html'" style="padding: 6px 12px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 6px; color: #a78bfa; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                <i data-lucide="sparkles" style="width:12px; height:12px;"></i> + Integrar via IA
+              </button>
+              <span style="font-size: 0.75rem; color: var(--text-muted); background: var(--input-bg); padding: 4px 8px; border-radius: 6px;">Consumo de Estoque</span>
+            </div>
+          </div>
+          
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 32px; line-height: 1.5;">
+            Conexões ativas com sistemas proprietários de parques e bancos de dados locais. O SentinelK varre esses estoques em tempo real.
+          </p>
+
+          <!-- Card 0: Museu do Caminhão -->
+          <div class="connection-card" style="border-color: var(--accent-purple); box-shadow: 0 0 15px rgba(139, 92, 246, 0.15); cursor: pointer;" onclick="openApiModal('museu')">
+            <div class="icon-box purple">
+              <i data-lucide="truck" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 6px;">
+                  API Museu do Caminhão <span style="font-size: 0.65rem; background: var(--accent-purple); color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">Pioneiro</span>
+                </h3>
+                <span style="color: var(--accent-green); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span> Ativo e Integrado
+                </span>
+              </div>
+              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Integração Volpe ERP / Sistema Oficial do Museu</p>
+              <div style="margin-top: 12px; font-size: 0.75rem; font-family: monospace; color: var(--accent-blue); display: flex; justify-content: space-between;">
+                <span>Latência: ~32ms | Vendas Ao Vivo: Sim</span>
+                <span style="color: var(--accent-purple); font-weight: 600;">Ver Produtos &rarr;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 1: Planne (Cervejaria Farol) -->
+          <div class="connection-card" style="border-color: var(--accent-orange); box-shadow: 0 0 15px rgba(245, 158, 11, 0.15); cursor: pointer;" onclick="openApiModal('planne')">
+            <div class="icon-box orange">
+              <i data-lucide="beer" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 6px;">
+                  API Planne <span style="font-size: 0.65rem; background: var(--accent-orange); color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">NOVO</span>
+                </h3>
+                <span style="color: var(--accent-green); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span> Conectado
+                </span>
+              </div>
+              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Cervejaria Farol (Seller API)</p>
+              <div style="margin-top: 12px; font-size: 0.75rem; font-family: monospace; color: var(--accent-orange); display: flex; justify-content: space-between;">
+                <span>Alocação Auto: Sim | Modo: Prod</span>
+                <span style="color: var(--accent-orange); font-weight: 600;">Ver Produtos &rarr;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: MongoDB -->
+          <div class="connection-card">
+            <div class="icon-box green">
+              <i data-lucide="hard-drive" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <h3 style="margin: 0; font-size: 1.1rem;">Banco Estático Local</h3>
+                <span style="color: var(--accent-green); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span> Online
+                </span>
+              </div>
+              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">MongoDB (Restaurantes, Tirolesas)</p>
+              <div style="margin-top: 12px; font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">
+                Acesso nativo | Sync: Em tempo real
+            </div>
+          </div>
+
+          <!-- Dynamic IA Adapters Container -->
+          <div id="dynamic-adapters-list"></div>
+
+          <!-- Card 3: Omnibees -->
+          <div class="connection-card" style="opacity: 0.7; border-style: dashed;">
+            <div class="icon-box orange">
+              <i data-lucide="building" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <h3 style="margin: 0; font-size: 1.1rem;">API Omnibees</h3>
+                <span style="color: var(--accent-orange); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <i data-lucide="clock" style="width: 12px; height: 12px;"></i> Em Breve
+                </span>
+              </div>
+              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Channel Manager de Hotéis</p>
+              <div style="margin-top: 12px; font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">
+                Status: Desenvolvimento (Fase 2)
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: OUTBOUND -->
+        <div class="glass-panel" style="padding: 32px; position: relative;">
+          
+          <!-- Central Hub Indicator (Visual) -->
+          <div style="position: absolute; left: -24px; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; background: var(--bg-darker); border: 2px solid var(--accent-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);">
+            <i data-lucide="cpu" style="width: 20px; height: 20px; color: var(--text-main);"></i>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px; padding-left: 16px;">
+            <h2 style="margin:0; font-size: 1.4rem; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="radio" style="color: var(--accent-purple);"></i> Distribuidores (Outbound)
+            </h2>
+            <span style="font-size: 0.75rem; color: var(--text-muted); background: var(--input-bg); padding: 4px 8px; border-radius: 6px;">Venda de Estoque</span>
+          </div>
+          
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 32px; line-height: 1.5; padding-left: 16px;">
+            Marketplaces, agências e aplicativos que consomem a nossa API pública para realizar vendas invisíveis.
+          </p>
+
+          <div style="padding-left: 16px;">
+            <!-- Card 1: B2C Web -->
+            <div class="connection-card">
+              <div class="icon-box purple">
+                <i data-lucide="monitor-smartphone" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <h3 style="margin: 0; font-size: 1.1rem;">Portal B2C Nativo</h3>
+                  <span style="color: var(--accent-purple); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                    <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Token Nativo
+                  </span>
+                </div>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Front-end White-label (React/HTML)</p>
+                <div style="margin-top: 12px; font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">
+                  Carga: 68% do tráfego web
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: OTA Partner -->
+            <div class="connection-card">
+              <div class="icon-box purple">
+                <i data-lucide="globe-2" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <h3 style="margin: 0; font-size: 1.1rem;">Agências OTA (B2B2C)</h3>
+                  <span style="color: var(--accent-green); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                    <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span> API Key Ativa
+                  </span>
+                </div>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Ex: Decolar, CVC Viagens</p>
+                <div style="margin-top: 12px; font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">
+                  Carga: 22% do tráfego web
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Totens -->
+            <div class="connection-card">
+              <div class="icon-box purple">
+                <i data-lucide="tablet" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <h3 style="margin: 0; font-size: 1.1rem;">Totens Autoatendimento</h3>
+                  <span style="color: var(--accent-green); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                    <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span> API Key Ativa
+                  </span>
+                </div>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Hardware físico nos hotéis e parques</p>
+                <div style="margin-top: 12px; font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">
+                  Carga: 10% do tráfego web
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- API Products Modal -->
+  <div class="modal-overlay" id="apiModal" onclick="closeApiModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="transition: max-width 0.3s ease; width: 100%; max-width: 600px;">
+      <button class="close-btn" onclick="closeApiModal()"><i data-lucide="x"></i></button>
+      
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+        <div class="icon-box" id="modalIconBox">
+          <i data-lucide="database" id="modalIcon"></i>
+        </div>
+        <div>
+          <h2 style="margin: 0; font-size: 1.5rem;" id="modalTitle">Produtos da API</h2>
+          <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);" id="modalSubtitle">Consultando disponibilidade em tempo real...</p>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div id="modalTabsHeader" style="display: none; gap: 16px; border-bottom: 1px solid var(--glass-border); margin-bottom: 16px; padding-bottom: 8px;">
+        <span class="modal-tab active-tab" id="tab-btn-overview" onclick="switchModalTab('overview')">Visão Geral</span>
+        <span class="modal-tab" id="tab-btn-document" onclick="switchModalTab('document')">Manual Técnico (IA)</span>
+        <span class="modal-tab" id="tab-btn-chat" onclick="switchModalTab('chat')">Assistente de Chat</span>
+      </div>
+
+      <!-- Tab Contents -->
+      <div id="modalProductsList" style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
+        <!-- Injetado via JS -->
+      </div>
+
+      <div id="modalDocContainer" style="display: none; max-height: 400px; overflow-y: auto; padding-right: 8px;">
+        <!-- Injetado via JS -->
+      </div>
+
+      <div id="modalChatContainer" style="display: none; flex-direction: column; height: 350px; gap: 12px;">
+        <div id="chat-history" style="flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
+          <!-- Mensagens do Chat -->
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="chat-input" placeholder="Pergunte sobre endpoints, payloads, credenciais..." style="flex: 1; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text-main); font-size: 0.85rem; outline: none;" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+          <button class="btn-primary" style="padding: 10px; border-radius: 6px; width: 40px; height: 40px; box-shadow: none;" onclick="sendChatMessage()" id="btn-send-chat">
+            <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 16px;">
+        <span style="font-size: 0.75rem; color: var(--accent-green); display: flex; align-items: center; gap: 6px;">
+          <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> SentinelK Active Node
+        </span>
+        <button class="btn-primary" onclick="closeApiModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function initTheme() {
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      } else {
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('light-theme')) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+    }
+
+    // State for Dynamic Modal Tabs
+    let activeModalTab = 'overview';
+    let currentModalPartnerId = '';
+    let currentModalPartnerName = '';
+    let chatHistoryMap = {}; // Maps partnerId to message history array
+
+    function openApiModal(api) {
+      const modal = document.getElementById('apiModal');
+      const title = document.getElementById('modalTitle');
+      const subtitle = document.getElementById('modalSubtitle');
+      const list = document.getElementById('modalProductsList');
+      const iconBox = document.getElementById('modalIconBox');
+      const icon = document.getElementById('modalIcon');
+
+      // Reset tabs and size for native providers
+      document.getElementById('modalTabsHeader').style.display = 'none';
+      document.getElementById('modalProductsList').style.display = 'block';
+      document.getElementById('modalDocContainer').style.display = 'none';
+      document.getElementById('modalChatContainer').style.display = 'none';
+      document.querySelector('.modal-content').style.maxWidth = '600px';
+
+      let products = [];
+
+      if (api === 'planne') {
+        title.innerText = 'Cervejaria Farol (Planne)';
+        subtitle.innerText = 'Produtos injetados automaticamente pela Seller API.';
+        iconBox.className = 'icon-box orange';
+        icon.setAttribute('data-lucide', 'beer');
+        
+        products = [
+          { id: '5061', name: 'Visitação Guiada à Cervejaria Farol', price: '45,00' },
+          { id: '5086', name: 'Farol Experience - Almoço Germânico', price: '120,00' },
+          { id: '5085', name: 'Farol Experience - Noite Germânica', price: '140,00' }
+        ];
+      } else if (api === 'museu') {
+        title.innerText = 'Museu do Caminhão';
+        subtitle.innerText = 'Integração pioneira do SentinelK com Volpe ERP.';
+        iconBox.className = 'icon-box purple';
+        icon.setAttribute('data-lucide', 'truck');
+        
+        products = [
+          { id: 'M001', name: 'Ingresso Museu - Adulto', price: '60,00' },
+          { id: 'M002', name: 'Ingresso Museu - Meia', price: '30,00' },
+          { id: 'M003', name: 'Ingresso Museu - Sênior (+60 anos)', price: '30,00' },
+          { id: 'M004', name: 'Ingresso Museu - Isento', price: '0,00' },
+          { id: 'M005', name: 'Passaporte VIP - Guia Exclusivo', price: '120,00' }
+        ];
+      }
+
+      list.innerHTML = '';
+      products.forEach(p => {
+        list.innerHTML += `
+          <div class="api-product-item">
+            <div>
+              <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0 0 4px 0; font-family: monospace;">ID: ${p.id}</p>
+              <h4 style="margin: 0; font-size: 1rem; color: var(--text-main);">${p.name}</h4>
+            </div>
+            <div style="text-align: right;">
+              <p style="margin: 0; font-size: 1.1rem; font-weight: bold; color: var(--text-main);">R$ ${p.price}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      lucide.createIcons();
+      modal.classList.add('active');
+    }
+
+    function closeApiModal(e) {
+      if (e && e.target !== document.getElementById('apiModal')) return;
+      document.getElementById('apiModal').classList.remove('active');
+      document.querySelector('.modal-content').style.maxWidth = '600px';
+    }
+
+    function getApiUrl(path) {
+      const loc = window.location;
+      if (loc.pathname.startsWith('/admin')) {
+        return '/admin/api' + path;
+      }
+      return `${loc.protocol}//${loc.hostname}:3333/api${path}`;
+    }
+
+    async function loadDynamicAdapters() {
+      const container = document.getElementById('dynamic-adapters-list');
+      if (!container) return;
+
+      try {
+        const res = await fetch(getApiUrl('/ai/adapters'));
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Erro ao carregar adaptadores dinâmicos.');
+        }
+
+        container.innerHTML = '';
+        if (data.data && data.data.length > 0) {
+          data.data.forEach(adapter => {
+            const escapedDoc = escapeHtml(adapter.apiDoc || '');
+            const escapedCode = escapeHtml(adapter.code || '');
+            const isActive = adapter.active !== false;
+
+            const cardStyle = isActive 
+              ? "border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); cursor: pointer;" 
+              : "border-color: var(--text-muted); opacity: 0.6; cursor: pointer; background: rgba(0,0,0,0.15);";
+            
+            const badgeHtml = isActive
+              ? `<span style="color: var(--accent-green); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span> Ativo
+                 </span>`
+              : `<span style="color: var(--accent-orange); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <span style="width: 6px; height: 6px; background: var(--accent-orange); border-radius: 50%; display: inline-block;"></span> Suspenso
+                 </span>`;
+                 
+            const toggleBtnHtml = isActive
+              ? `<button onclick="event.stopPropagation(); toggleAdapterActive('${adapter.partnerId}')" style="background:none; border:none; color:var(--accent-orange); cursor:pointer; font-size:0.75rem; font-weight:600; display:flex; align-items:center; gap:2px; padding: 4px 8px; background: rgba(245, 158, 11, 0.1); border-radius: 4px;">
+                  <i data-lucide="pause-circle" style="width:12px; height:12px;"></i> Pausar
+                 </button>`
+              : `<button onclick="event.stopPropagation(); toggleAdapterActive('${adapter.partnerId}')" style="background:none; border:none; color:var(--accent-green); cursor:pointer; font-size:0.75rem; font-weight:600; display:flex; align-items:center; gap:2px; padding: 4px 8px; background: rgba(16, 185, 129, 0.1); border-radius: 4px;">
+                  <i data-lucide="play-circle" style="width:12px; height:12px;"></i> Ativar
+                 </button>`;
+
+            container.innerHTML += `
+              <div class="connection-card" style="${cardStyle}" onclick="openDynamicAdapterModal('${adapter.partnerId}', '${adapter.partnerName}', \`${escapedDoc}\`, \`${escapedCode}\`)">
+                <div class="icon-box ${isActive ? 'blue' : 'orange'}" style="${!isActive ? 'background: rgba(245, 158, 11, 0.05); color: var(--accent-orange);' : ''}">
+                  <i data-lucide="${isActive ? 'brain-circuit' : 'pause-circle'}" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 6px;">
+                      ${adapter.partnerName} <span style="font-size: 0.65rem; background: ${isActive ? 'var(--accent-blue)' : 'var(--text-muted)'}; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">IA DYNAMIC</span>
+                    </h3>
+                    ${badgeHtml}
+                  </div>
+                  <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Provedor: ${adapter.partnerId} | Sandbox VM Segura</p>
+                  <div style="margin-top: 12px; font-size: 0.75rem; font-family: monospace; color: var(--accent-blue); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="${!isActive ? 'color: var(--text-muted);' : ''}">Status: ${isActive ? 'Ativo na Produção' : 'Vendas Bloqueadas'}</span>
+                    <div style="display: flex; gap: 8px;">
+                      ${toggleBtnHtml}
+                      <button onclick="event.stopPropagation(); deleteAdapter('${adapter.partnerId}')" style="background:none; border:none; color:#f87171; cursor:pointer; font-size:0.75rem; font-weight:600; display:flex; align-items:center; gap:2px; padding: 4px 8px; background: rgba(239, 68, 68, 0.1); border-radius: 4px;">
+                        <i data-lucide="trash-2" style="width:12px; height:12px;"></i> Excluir
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.error('Falha ao listar adaptadores dinâmicos:', err);
+      }
+    }
+
+    async function toggleAdapterActive(partnerId) {
+      try {
+        const res = await fetch(getApiUrl(`/ai/adapters/${partnerId}/toggle`), {
+          method: 'PATCH'
+        });
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Falha ao alternar status.');
+        }
+
+        const newStatus = data.active ? 'ATIVADA' : 'PAUSADA';
+        alert(`Integração com o parceiro ${partnerId} foi marcada como ${newStatus} com sucesso!`);
+        loadDynamicAdapters();
+      } catch (err) {
+        alert(`Erro ao pausar/reativar: ${err.message}`);
+      }
+    }
+
+    async function deleteAdapter(partnerId) {
+      if (!confirm(`Deseja realmente desativar e remover o adaptador dinâmico ${partnerId}?`)) return;
+
+      try {
+        const res = await fetch(getApiUrl(`/ai/adapters/${partnerId}`), {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Falha ao remover.');
+        }
+
+        alert('Adaptador dinâmico desativado e removido com sucesso!');
+        loadDynamicAdapters();
+      } catch (err) {
+        alert(`Erro ao deletar: ${err.message}`);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+        .replace(/`/g, "\\`")
+        .replace(/\$/g, "\\$");
+    }
+
+    function openDynamicAdapterModal(partnerId, partnerName, apiDoc, code) {
+      const modal = document.getElementById('apiModal');
+      const title = document.getElementById('modalTitle');
+      const subtitle = document.getElementById('modalSubtitle');
+      const list = document.getElementById('modalProductsList');
+      const iconBox = document.getElementById('modalIconBox');
+      const icon = document.getElementById('modalIcon');
+
+      // Setup state variables
+      currentModalPartnerId = partnerId;
+      currentModalPartnerName = partnerName;
+
+      // Expand modal layout to display documentation and chat
+      document.querySelector('.modal-content').style.maxWidth = '850px';
+
+      title.innerText = `${partnerName} (IA Dynamic)`;
+      subtitle.innerText = `Gerenciamento da integração inteligente do provedor ${partnerId}`;
+      iconBox.className = 'icon-box blue';
+      icon.setAttribute('data-lucide', 'brain-circuit');
+
+      // Clear loaded datasets
+      document.getElementById('modalDocContainer').dataset.loaded = 'false';
+
+      // Load static overview panel
+      list.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div>
+            <h4 style="margin: 0 0 6px 0; font-size: 0.9rem; color: var(--accent-blue);">Status da Integração</h4>
+            <div style="display:flex; gap:16px; font-size:0.8rem; background:rgba(255,255,255,0.02); padding:12px; border-radius:6px; border:1px solid var(--glass-border); flex-wrap:wrap;">
+              <div><strong>ID:</strong> ${partnerId}</div>
+              <div><strong>Segurança:</strong> Sandbox Exec (Node VM)</div>
+              <div><strong>Conexão:</strong> Ativa (200 OK)</div>
+            </div>
+          </div>
+          <div>
+            <h4 style="margin: 0 0 6px 0; font-size: 0.9rem; color: var(--accent-blue);">Documentação Mapeada</h4>
+            <div style="max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid var(--glass-border); white-space: pre-wrap; word-break: break-all;">
+              ${apiDoc || 'Nenhuma documentação registrada.'}
+            </div>
+          </div>
+          <div>
+            <h4 style="margin: 0 0 6px 0; font-size: 0.9rem; color: var(--accent-blue);">Código do Adaptador JS</h4>
+            <div style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; background: #020617; color:#e2e8f0; padding: 10px; border-radius: 6px; border: 1px solid var(--glass-border); white-space: pre; overflow-x: auto;">
+              ${code}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Enable and show tab header
+      document.getElementById('modalTabsHeader').style.display = 'flex';
+      
+      // Default to overview tab
+      switchModalTab('overview');
+
+      modal.classList.add('active');
+    }
+
+    function switchModalTab(tabId) {
+      activeModalTab = tabId;
+
+      // Update buttons active status
+      document.querySelectorAll('.modal-tab').forEach(el => {
+        el.classList.remove('active-tab');
+      });
+
+      const activeBtn = document.getElementById('tab-btn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.add('active-tab');
+      }
+
+      // Toggle containers visibility
+      document.getElementById('modalProductsList').style.display = (tabId === 'overview') ? 'block' : 'none';
+      document.getElementById('modalDocContainer').style.display = (tabId === 'document') ? 'block' : 'none';
+      document.getElementById('modalChatContainer').style.display = (tabId === 'chat') ? 'flex' : 'none';
+
+      // Lazy load document manual
+      if (tabId === 'document' && document.getElementById('modalDocContainer').dataset.loaded !== 'true') {
+        fetchTechnicalDocument();
+      }
+
+      // Focus chat input
+      if (tabId === 'chat') {
+        document.getElementById('chat-input').focus();
+        renderChatHistory();
+      }
+    }
+
+    async function fetchTechnicalDocument() {
+      const docContainer = document.getElementById('modalDocContainer');
+      docContainer.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; gap:16px;">
+          <i data-lucide="loader" class="spin" style="width: 32px; height: 32px; color: var(--accent-purple);"></i>
+          <span style="font-size:0.85rem; color:var(--text-muted);">Compilando documentação com IA baseada no código...</span>
+        </div>
+      `;
+      lucide.createIcons();
+
+      try {
+        const res = await fetch(getApiUrl(`/ai/document/${currentModalPartnerId}`));
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Erro na compilação do manual.');
+        }
+
+        docContainer.innerHTML = `
+          <div style="padding:16px; background:rgba(0,0,0,0.1); border:1px solid var(--glass-border); border-radius:8px; line-height:1.6; font-size:0.9rem;">
+            ${renderMarkdownToHtml(data.markdown)}
+          </div>
+        `;
+        docContainer.dataset.loaded = 'true';
+      } catch (err) {
+        docContainer.innerHTML = `
+          <div style="padding:20px; color:#f87171; border:1px solid rgba(239, 68, 68, 0.2); background:rgba(239, 68, 68, 0.05); border-radius:8px; font-size:0.85rem;">
+            <strong>Erro ao gerar documentação:</strong> ${err.message}
+          </div>
+        `;
+      }
+    }
+
+    function renderMarkdownToHtml(md) {
+      if (!md) return '';
+      // Simple parser for clean styling
+      let html = md
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+      // Headings
+      html = html.replace(/^### (.*$)/gim, '<h4 style="color:var(--accent-blue); margin: 20px 0 10px 0; font-size: 1.15rem;">$1</h4>');
+      html = html.replace(/^## (.*$)/gim, '<h3 style="color:var(--accent-purple); margin: 24px 0 12px 0; font-size: 1.3rem; border-bottom: 1px solid var(--glass-border); padding-bottom:6px;">$1</h3>');
+      html = html.replace(/^# (.*$)/gim, '<h2 style="color:var(--text-main); margin: 0 0 16px 0; font-size: 1.5rem;">$1</h2>');
+
+      // Bold
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-main); font-weight:700;">$1</strong>');
+
+      // Code blocks
+      html = html.replace(/```javascript([\s\S]*?)```/g, '<pre style="background:#020617; padding:12px; border-radius:6px; border:1px solid var(--glass-border); font-family:monospace; font-size:0.75rem; color:#e2e8f0; overflow-x:auto; margin:12px 0; white-space:pre;">$1</pre>');
+      html = html.replace(/```json([\s\S]*?)```/g, '<pre style="background:#020617; padding:12px; border-radius:6px; border:1px solid var(--glass-border); font-family:monospace; font-size:0.75rem; color:#a78bfa; overflow-x:auto; margin:12px 0; white-space:pre;">$1</pre>');
+      html = html.replace(/```([\s\S]*?)```/g, '<pre style="background:#020617; padding:12px; border-radius:6px; border:1px solid var(--glass-border); font-family:monospace; font-size:0.75rem; color:#94a3b8; overflow-x:auto; margin:12px 0; white-space:pre;">$1</pre>');
+
+      // Inline code
+      html = html.replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.8rem; color:var(--accent-blue);">$1</code>');
+
+      // Lists
+      html = html.replace(/^\s*-\s+(.*$)/gim, '<li style="margin-left: 20px; margin-bottom: 6px;">$1</li>');
+
+      // Paragraph spacing (newlines)
+      html = html.split('\n').map(line => {
+        if (line.trim().startsWith('<h') || line.trim().startsWith('<li') || line.trim().startsWith('<pre') || line.trim().startsWith('</pre') || line.trim() === '') {
+          return line;
+        }
+        return `<p style="margin-bottom: 12px; color:var(--text-muted);">${line}</p>`;
+      }).join('\n');
+
+      return html;
+    }
+
+    function renderChatHistory() {
+      const historyContainer = document.getElementById('chat-history');
+      if (!historyContainer) return;
+
+      const history = chatHistoryMap[currentModalPartnerId] || [];
+      if (history.length === 0) {
+        historyContainer.innerHTML = `
+          <div style="color: var(--text-muted); font-style: italic; text-align: center; margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <i data-lucide="message-square" style="width:32px; height:32px; color:var(--accent-purple);"></i>
+            <span>Assistente de Suporte SentinelK. Pergunte qualquer detalhe sobre o adaptador de ${currentModalPartnerName}!</span>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      historyContainer.innerHTML = '';
+      history.forEach(msg => {
+        const isUser = msg.role === 'user';
+        const bg = isUser ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255,255,255,0.03)';
+        const border = isUser ? 'rgba(139, 92, 246, 0.3)' : 'var(--glass-border)';
+        const name = isUser ? 'Você' : 'Suporte SentinelK IA';
+        const nameColor = isUser ? 'var(--accent-purple)' : 'var(--accent-blue)';
+
+        historyContainer.innerHTML += `
+          <div style="padding:10px; border-radius:6px; border:1px solid ${border}; background:${bg};">
+            <span style="font-weight:700; color:${nameColor}; font-size:0.75rem; display:block; margin-bottom:4px;">${name}</span>
+            <div style="color:var(--text-main); font-size:0.85rem; line-height:1.4;">${isUser ? escapeHtml(msg.content) : renderMarkdownToHtml(msg.content)}</div>
+          </div>
+        `;
+      });
+      historyContainer.scrollTop = historyContainer.scrollHeight;
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+      if (!chatHistoryMap[currentModalPartnerId]) {
+        chatHistoryMap[currentModalPartnerId] = [];
+      }
+
+      // Add user message
+      chatHistoryMap[currentModalPartnerId].push({ role: 'user', content: text });
+      renderChatHistory();
+
+      // Show typing status
+      const historyContainer = document.getElementById('chat-history');
+      const typingIndicator = document.createElement('div');
+      typingIndicator.id = 'typing-indicator';
+      typingIndicator.style.cssText = 'padding:10px; border-radius:6px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.03); color:var(--text-muted); font-style:italic; font-size:0.8rem; display:flex; align-items:center; gap:8px;';
+      typingIndicator.innerHTML = `<i data-lucide="loader" class="spin" style="width:12px; height:12px;"></i> Digitando resposta...`;
+      historyContainer.appendChild(typingIndicator);
+      lucide.createIcons();
+      historyContainer.scrollTop = historyContainer.scrollHeight;
+
+      try {
+        const res = await fetch(getApiUrl('/ai/chat'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            partnerId: currentModalPartnerId,
+            messages: chatHistoryMap[currentModalPartnerId]
+          })
+        });
+
+        const data = await res.json();
+        
+        // Remove typing status
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) indicator.remove();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Erro na resposta do chat.');
+        }
+
+        // Add assistant message
+        chatHistoryMap[currentModalPartnerId].push({ role: 'assistant', content: data.reply });
+        renderChatHistory();
+      } catch (err) {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) indicator.remove();
+
+        alert(`Erro na conversa: ${err.message}`);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      lucide.createIcons();
+      loadDynamicAdapters();
+    });
+  </script>
+</body>
+</html>

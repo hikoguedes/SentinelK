@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - Gestão de Parceiros</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .admin-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .commission-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background: var(--bg-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-lg);
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--glass-shadow);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container animate-fade">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="../logo.png" alt="SentinelK Logo" style="height: 32px; width: auto; object-fit: contain;">
+          <span style="font-weight: 800; font-size: 1.3rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Admin</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Portal do Administrador</p>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px;">
+        <!-- CATEGORIA: GERAL -->
+        <div class="sidebar-heading" style="margin-top:0;" data-role="superadmin,partner_manager">Geral</div>
+        <div class="nav-item" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b.html'"><i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>Visão Geral (Admin)</div>
+
+        <!-- CATEGORIA: NÚCLEO SENTINELK -->
+        <div class="sidebar-heading" data-role="superadmin">Núcleo SentinelK</div>
+        <div class="nav-item" id="nav-item-sentinelk-dash" data-role="superadmin" onclick="window.location.href='../sentinelk/dashboard.html'"><i data-lucide="activity" style="width: 18px; height: 18px;"></i>SentinelK Dashboard</div>
+        <div class="nav-item" id="nav-item-sentinelk-network" data-role="superadmin" onclick="window.location.href='../sentinelk/network.html'"><i data-lucide="network" style="width: 18px; height: 18px;"></i>Rede de Integrações</div>
+        <div class="nav-item" id="nav-item-sentinelk-onboarding" data-role="superadmin" onclick="window.location.href='../sentinelk/ai-onboarding.html'"><i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>Onboarding de IA</div>
+        <div class="nav-item" id="nav-item-sentinelk-recursos" data-role="superadmin" onclick="window.location.href='../sentinelk/recursos.html'"><i data-lucide="sliders" style="width: 18px; height: 18px;"></i>Parceiros e Recursos</div>
+
+        <!-- CATEGORIA: GESTÃO B2B -->
+        <div class="sidebar-heading" data-role="superadmin">Gestão B2B</div>
+        <div class="nav-item active" id="nav-item-gerenciar-parceiros" data-role="superadmin" onclick="window.location.href='../partner/gerenciar-parceiros.html'"><i data-lucide="users" style="width: 18px; height: 18px;"></i>Gerenciar Parceiros</div>
+        <div class="nav-item" id="nav-item-cadastro-parceiro" data-role="superadmin" onclick="window.location.href='../partner/cadastro-parceiro.html'"><i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>Credenciar Parceiro</div>
+        <div class="nav-item" id="nav-item-monitor-vendas" data-role="superadmin" onclick="window.location.href='../partner/monitor-vendas.html'"><i data-lucide="bar-chart-3" style="width: 18px; height: 18px;"></i>Monitor de Vendas</div>
+
+        <!-- CATEGORIA: EXTRANET (PARCEIROS) -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Extranet (Visão Parceiro)</div>
+        <div class="nav-item" id="nav-item-resumo" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=resumo'"><i data-lucide="store" style="width: 18px; height: 18px;"></i>Painel Operacional</div>
+        <div class="nav-item" id="nav-item-produtos" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-setup.html'"><i data-lucide="package" style="width: 18px; height: 18px;"></i>Catálogo de Produtos</div>
+        <div class="nav-item" id="nav-item-calendario" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=calendario'"><i data-lucide="calendar" style="width: 18px; height: 18px;"></i>Estoque & Lotes</div>
+        <div class="nav-item" id="nav-item-validador" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=validador'"><i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>Validador de Voucher</div>
+        <div class="nav-item" id="nav-item-financeiro" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=financeiro'"><i data-lucide="wallet" style="width: 18px; height: 18px;"></i>Extrato Financeiro</div>
+        <div class="nav-item" id="nav-item-perfil" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=perfil'"><i data-lucide="user" style="width: 18px; height: 18px;"></i>Dados Cadastrais</div>
+
+        <!-- CATEGORIA: CANAIS B2C -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Canais B2C</div>
+        <div class="nav-item" onclick="window.open('../index.html', '_blank')"><i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>Marketplace B2C <i data-lucide="external-link" style="width: 12px; height: 12px; margin-left: auto;"></i></div>
+      </nav>
+      
+      <div style="margin-top: auto; padding: 16px; background: rgba(139, 92, 246, 0.05); border-radius: var(--border-radius-md); border: 1px solid rgba(139, 92, 246, 0.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Logado como:<br><strong id="session-username">Aguardando...</strong></p>
+        <button onclick="logoutSession()" style="width: 100%; padding: 6px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; border-style: solid;">
+          <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1>Gestão de Parceiros</h1>
+          <p class="subtitle" style="margin: 0;">Credencie estabelecimentos, configure as comissões de split de pagamento e acompanhe os repasses.</p>
+        </div>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <!-- Theme Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+            <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+            <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+          </button>
+          
+          <button class="btn-primary" onclick="window.location.href='cadastro-parceiro.html'">
+            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Credenciar Parceiro
+          </button>
+        </div>
+      </header>
+
+      <!-- Stats Row -->
+      <div class="dashboard-grid">
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+            <span style="font-size: 0.9rem; font-weight: 500;">Parceiros Credenciados</span>
+            <i data-lucide="users" style="width: 20px; height: 20px; color: var(--accent-purple);"></i>
+          </div>
+          <span class="stat-value" id="stat-total-partners">0</span>
+          <p style="color: var(--text-muted); font-size: 0.8rem;" id="stat-active-partners">0 Ativos / 0 Suspensos</p>
+        </div>
+        
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+            <span style="font-size: 0.9rem; font-weight: 500;">Markup Retido (Acumulado)</span>
+            <i data-lucide="wallet" style="width: 20px; height: 20px; color: var(--accent-orange);"></i>
+          </div>
+          <span class="stat-value" id="stat-markup-retido">R$ 0,00</span>
+          <p style="color: var(--accent-green); font-size: 0.8rem; display: flex; align-items: center; gap: 4px; font-weight: 600;">
+            <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> 15% Comissão média
+          </p>
+        </div>
+        
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+            <span style="font-size: 0.9rem; font-weight: 500;">Repasse Liquidado (Split)</span>
+            <i data-lucide="arrow-up-right" style="width: 20px; height: 20px; color: var(--accent-green);"></i>
+          </div>
+          <span class="stat-value" id="stat-repasse-liquidado" style="background: var(--gradient-primary); -webkit-background-clip: text;">R$ 0,00</span>
+          <p style="color: var(--text-muted); font-size: 0.8rem;">Enviado direto às contas bancárias</p>
+        </div>
+      </div>
+
+      <!-- Partners Grid / List -->
+      <div class="admin-container">
+        <div class="glass-panel" style="padding: 24px; overflow-x: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+            <h3 style="margin: 0;">Lista de Parceiros Comerciais</h3>
+            <div class="search-bar" style="margin: 0; max-width: 320px; padding: 8px 12px; border-radius: 8px;">
+              <i data-lucide="search" style="color: var(--text-muted); width: 16px; height: 16px;"></i>
+              <input type="text" id="search-partner" onkeyup="filterPartnersTable()" placeholder="Buscar por nome ou CNPJ..." style="font-size: 0.85rem;">
+            </div>
+          </div>
+
+          <table class="table-dark">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Parceiro</th>
+                <th>CNPJ</th>
+                <th>Categoria</th>
+                <th>Markup Split</th>
+                <th>Banco Configurado</th>
+                <th style="text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="partners-table-body">
+              <!-- Preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Commission Configuration Modal -->
+  <div class="commission-modal" id="configCommissionModal">
+    <div class="modal-content animate-fade">
+      <h2 style="margin-bottom: 8px;">Ajustar Taxa de Split</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;" id="modal-partner-label">Snowland Park</p>
+      
+      <input type="hidden" id="modal-partner-id">
+
+      <div class="form-input-group">
+        <label for="input-commission">Porcentagem Retida da Plataforma (%)</label>
+        <div style="position: relative;">
+          <input type="number" id="input-commission" min="0" max="100" style="padding-right: 32px;">
+          <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-weight: bold; color: var(--text-muted);">%</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+          O split do Mercado Pago dividirá as vendas automaticamente. O parceiro receberá a diferença.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 32px;">
+        <button class="btn-secondary" style="flex: 1;" onclick="closeCommissionModal()">Cancelar</button>
+        <button class="btn-primary" style="flex: 1; background: var(--accent-purple);" onclick="saveCommissionSetting()">Salvar Taxa</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State management matching local storage structure
+    function getEstablishments() {
+      let list = localStorage.getItem('sentinelk_establishments');
+      if (!list) {
+        const defaultPartners = [
+          {
+            id: "PART-101",
+            companyName: "Snowland Park S/A",
+            tradeName: "Snowland Park",
+            cnpj: "12.345.678/0001-90",
+            category: "parque",
+            phone: "(54) 3295-7700",
+            cep: "95670-000",
+            email: "contato@snowland.com.br",
+            address: "RS-235, 9009",
+            city: "Gramado",
+            state: "RS",
+            bank: "Banco do Brasil",
+            agency: "0123",
+            account: "45678-9",
+            commission: 15,
+            status: "active"
+          },
+          {
+            id: "PART-201",
+            companyName: "Alpino Hospedagens Ltda",
+            tradeName: "Resort Alpino",
+            cnpj: "98.765.432/0001-10",
+            category: "hotel",
+            phone: "(54) 3286-1122",
+            cep: "95670-000",
+            email: "reservas@resortalpino.com",
+            address: "Av. das Hortênsias, 5000",
+            city: "Gramado",
+            state: "RS",
+            bank: "Itaú Unibanco",
+            agency: "4321",
+            account: "98765-4",
+            commission: 15,
+            status: "active"
+          },
+          {
+            id: "PART-301",
+            companyName: "Fondue Alpino Gastronomia Ltda",
+            tradeName: "Restaurante Alpino",
+            cnpj: "55.444.333/0001-22",
+            category: "gastronomia",
+            phone: "(54) 3286-9900",
+            cep: "95670-000",
+            email: "contato@restaurantealpino.com",
+            address: "Av. Borges de Medeiros, 2500",
+            city: "Gramado",
+            state: "RS",
+            bank: "Banco Santander",
+            agency: "9876",
+            account: "11223-4",
+            commission: 15,
+            status: "active"
+          }
+        ];
+        localStorage.setItem('sentinelk_establishments', JSON.stringify(defaultPartners));
+        return defaultPartners;
+      }
+      return JSON.parse(list);
+    }
+
+    function getReservations() {
+      let list = localStorage.getItem('sentinelk_reservations');
+      if (!list) {
+        const defaultReservations = [
+          { id: "TKT-30101", partnerId: "PART-301", status: "Check-in Realizado", time: "14:30", code: "SNT-77A9B", name: "João Silva", productName: "Fondue Premium", qty: 2, price: 350, date: "2026-05-24" },
+          { id: "TKT-30102", partnerId: "PART-301", status: "Aguardando Cliente", time: "16:45", code: "SNT-88B2C", name: "Maria Oliveira", productName: "Fondue Premium", qty: 4, price: 350, date: "2026-05-24" },
+          { id: "TKT-20101", partnerId: "PART-201", status: "Check-in Realizado", time: "12:00", code: "SNT-55C1A", name: "Carlos Souza", productName: "Suíte Alpina Luxo", qty: 2, price: 680, date: "2026-05-24" },
+          { id: "TKT-10101", partnerId: "PART-101", status: "Aguardando Cliente", time: "10:15", code: "SNT-11D5F", name: "Patricia Lima", productName: "Snowland Passaporte", qty: 3, price: 507, date: "2026-05-24" }
+        ];
+        localStorage.setItem('sentinelk_reservations', JSON.stringify(defaultReservations));
+        return defaultReservations;
+      }
+      return JSON.parse(list);
+    }
+
+    function saveEstablishments(list) {
+      localStorage.setItem('sentinelk_establishments', JSON.stringify(list));
+    }
+
+    function renderPartnersTable() {
+      const partners = getEstablishments();
+      const tbody = document.getElementById('partners-table-body');
+      tbody.innerHTML = "";
+
+      partners.forEach(p => {
+        const commission = p.commission !== undefined ? p.commission : 15;
+        const status = p.status || 'active';
+        const statusClass = status === 'active' ? 'status-confirmed' : 'status-lock';
+        const statusLabel = status === 'active' ? 'Ativo' : 'Suspenso';
+        
+        let catBadge = '';
+        if (p.category === 'gastronomia') {
+          catBadge = `<span class="status-badge" style="background: rgba(239, 68, 68, 0.1); color: #f87171;"><i data-lucide="utensils" style="width:12px; height:12px;"></i> Gastronomia</span>`;
+        } else if (p.category === 'hotel') {
+          catBadge = `<span class="status-badge" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa;"><i data-lucide="bed-double" style="width:12px; height:12px;"></i> Hospedagem</span>`;
+        } else {
+          catBadge = `<span class="status-badge" style="background: rgba(16, 185, 129, 0.1); color: #34d399;"><i data-lucide="ticket" style="width:12px; height:12px;"></i> Parque (PWI)</span>`;
+        }
+
+        tbody.innerHTML += `
+          <tr>
+            <td>
+              <span class="status-badge ${statusClass}" onclick="togglePartnerStatus('${p.id}')" style="cursor: pointer;" title="Clique para alternar status">
+                ${statusLabel}
+              </span>
+            </td>
+            <td>
+              <strong>${p.tradeName}</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">${p.companyName} &bull; ID: ${p.id}</div>
+            </td>
+            <td style="font-family: monospace;">${p.cnpj}</td>
+            <td>${catBadge}</td>
+            <td>
+              <strong style="color: var(--accent-purple);">${commission}%</strong>
+              <button style="background:none; border:none; cursor:pointer; color:var(--text-muted); margin-left:6px; vertical-align: middle;" onclick="openCommissionModal('${p.id}', '${p.tradeName}', ${commission})" title="Configurar Markup Split">
+                <i data-lucide="edit-2" style="width:12px; height:12px;"></i>
+              </button>
+            </td>
+            <td>
+              <div style="font-size: 0.85rem;">${p.bank}</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Ag ${p.agency} | CC ${p.account}</div>
+            </td>
+            <td style="text-align: right;">
+              <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; margin-right: 6px;" onclick="window.location.href='../sentinelk/recursos.html?id=${p.id}'">
+                <i data-lucide="sliders" style="width:12px; height:12px;"></i> Recursos
+              </button>
+              <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: rgba(239, 68, 68, 0.2); color: #f87171;" onclick="deletePartner('${p.id}')">
+                <i data-lucide="trash-2" style="width:12px; height:12px;"></i> Excluir
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      lucide.createIcons();
+      updateGeneralStats();
+    }
+
+    function togglePartnerStatus(partnerId) {
+      let partners = getEstablishments();
+      const idx = partners.findIndex(p => p.id === partnerId);
+      if (idx !== -1) {
+        partners[idx].status = partners[idx].status === 'active' ? 'suspended' : 'active';
+        saveEstablishments(partners);
+        renderPartnersTable();
+      }
+    }
+
+    function deletePartner(partnerId) {
+      if (confirm("Tem certeza que deseja descredenciar este parceiro? Todos os produtos vinculados serão suspensos do marketplace.")) {
+        let partners = getEstablishments();
+        partners = partners.filter(p => p.id !== partnerId);
+        saveEstablishments(partners);
+        renderPartnersTable();
+      }
+    }
+
+    function openCommissionModal(partnerId, tradeName, currentCommission) {
+      document.getElementById('modal-partner-id').value = partnerId;
+      document.getElementById('modal-partner-label').innerText = tradeName;
+      document.getElementById('input-commission').value = currentCommission;
+      document.getElementById('configCommissionModal').style.display = 'flex';
+    }
+
+    function closeCommissionModal() {
+      document.getElementById('configCommissionModal').style.display = 'none';
+    }
+
+    function saveCommissionSetting() {
+      const partnerId = document.getElementById('modal-partner-id').value;
+      const commissionVal = parseInt(document.getElementById('input-commission').value || 15);
+      
+      let partners = getEstablishments();
+      const idx = partners.findIndex(p => p.id === partnerId);
+      if (idx !== -1) {
+        partners[idx].commission = commissionVal;
+        saveEstablishments(partners);
+        closeCommissionModal();
+        renderPartnersTable();
+      }
+    }
+
+    function updateGeneralStats() {
+      const partners = getEstablishments();
+      const reservations = getReservations();
+      
+      document.getElementById('stat-total-partners').innerText = partners.length;
+      
+      const activeCount = partners.filter(p => p.status === 'active').length;
+      const suspendedCount = partners.length - activeCount;
+      document.getElementById('stat-active-partners').innerText = `${activeCount} Ativos / ${suspendedCount} Suspensos`;
+
+      // Calculate total revenue, split commission based on custom percentages per partner
+      let totalGross = 0;
+      let totalPlatformFee = 0;
+
+      reservations.forEach(res => {
+        // Find partner commission
+        const partner = partners.find(p => p.id === res.partnerId);
+        const commRate = (partner && partner.commission !== undefined) ? partner.commission : 15;
+        
+        const priceVal = parseFloat(res.price || 0);
+        totalGross += priceVal;
+        totalPlatformFee += priceVal * (commRate / 100);
+      });
+
+      const partnerRepasse = totalGross - totalPlatformFee;
+
+      document.getElementById('stat-markup-retido').innerText = 'R$ ' + totalPlatformFee.toFixed(2).replace('.', ',');
+      document.getElementById('stat-repasse-liquidado').innerText = 'R$ ' + partnerRepasse.toFixed(2).replace('.', ',');
+    }
+
+    function filterPartnersTable() {
+      const query = document.getElementById('search-partner').value.toLowerCase();
+      const tbody = document.getElementById('partners-table-body');
+      const rows = tbody.querySelectorAll('tr');
+      
+      rows.forEach(row => {
+        const textContent = row.textContent.toLowerCase();
+        if (textContent.includes(query)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // Theme logic
+    function initTheme() {
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      } else {
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('light-theme')) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      renderPartnersTable();
+    });
+  </script>
+</body>
+</html>

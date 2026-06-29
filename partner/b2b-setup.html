@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - Setup do Parceiro</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* Estilos extras para o Wizard e Live Preview */
+    .setup-container {
+      display: grid;
+      grid-template-columns: 1.6fr 1.4fr;
+      gap: 40px;
+      align-items: flex-start;
+      margin-top: 24px;
+    }
+    @media (max-width: 900px) {
+      .setup-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--glass-border);
+      background: var(--input-bg);
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+    
+    .wizard-step {
+      display: none;
+    }
+    .wizard-step.active {
+      display: block;
+    }
+    
+    /* Live Preview Panel Card styling mimicking B2C */
+    .live-preview-panel {
+      position: sticky;
+      top: 40px;
+      padding: 32px;
+    }
+    
+    .product-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+    .product-row:hover {
+      border-color: var(--accent-purple);
+      transform: translateY(-2px);
+    }
+    .product-row img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .tab-menu {
+      display: flex;
+      gap: 24px;
+      border-bottom: 1px solid var(--glass-border);
+      margin-bottom: 32px;
+    }
+    .tab {
+      padding: 12px 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      color: var(--accent-purple);
+      border-bottom-color: var(--accent-purple);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container animate-fade">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="../logo.png" alt="SentinelK Logo" style="height: 32px; width: auto; object-fit: contain;">
+          <span style="font-weight: 800; font-size: 1.3rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Admin</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Portal do Administrador</p>
+      </div>
+
+      <!-- Partner Info Selector -->
+      <div class="glass-panel" style="display: flex; align-items: center; gap: 12px; padding: 14px;">
+        <div id="partner-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
+          RP
+        </div>
+        <div>
+          <p style="font-weight: 600;" id="partner-name">Resort & Pousada</p>
+          <p style="font-size: 0.75rem; color: var(--text-muted);" id="partner-id">ID: 994-BR</p>
+        </div>
+      </div>
+      <div style="padding: 0 14px; margin-top: -12px; margin-bottom: 12px;">
+        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Selecionar Estabelecimento:</label>
+        <select id="partner-selector" onchange="switchActivePartner(this.value)" style="width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 4px; padding: 4px; font-size: 0.8rem; outline: none; cursor: pointer; color-scheme: dark;">
+          <!-- Carregado via JS -->
+        </select>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px;">
+        <!-- CATEGORIA: GERAL -->
+        <div class="sidebar-heading" style="margin-top:0;" data-role="superadmin,partner_manager">Geral</div>
+        <div class="nav-item" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b.html'"><i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>Visão Geral (Admin)</div>
+
+        <!-- CATEGORIA: NÚCLEO SENTINELK -->
+        <div class="sidebar-heading" data-role="superadmin">Núcleo SentinelK</div>
+        <div class="nav-item" id="nav-item-sentinelk-dash" data-role="superadmin" onclick="window.location.href='../sentinelk/dashboard.html'"><i data-lucide="activity" style="width: 18px; height: 18px;"></i>SentinelK Dashboard</div>
+        <div class="nav-item" id="nav-item-sentinelk-network" data-role="superadmin" onclick="window.location.href='../sentinelk/network.html'"><i data-lucide="network" style="width: 18px; height: 18px;"></i>Rede de Integrações</div>
+        <div class="nav-item" id="nav-item-sentinelk-onboarding" data-role="superadmin" onclick="window.location.href='../sentinelk/ai-onboarding.html'"><i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>Onboarding de IA</div>
+        <div class="nav-item" id="nav-item-sentinelk-recursos" data-role="superadmin" onclick="window.location.href='../sentinelk/recursos.html'"><i data-lucide="sliders" style="width: 18px; height: 18px;"></i>Parceiros e Recursos</div>
+
+        <!-- CATEGORIA: GESTÃO B2B -->
+        <div class="sidebar-heading" data-role="superadmin">Gestão B2B</div>
+        <div class="nav-item" id="nav-item-gerenciar-parceiros" data-role="superadmin" onclick="window.location.href='../partner/gerenciar-parceiros.html'"><i data-lucide="users" style="width: 18px; height: 18px;"></i>Gerenciar Parceiros</div>
+        <div class="nav-item" id="nav-item-cadastro-parceiro" data-role="superadmin" onclick="window.location.href='../partner/cadastro-parceiro.html'"><i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>Credenciar Parceiro</div>
+        <div class="nav-item" id="nav-item-monitor-vendas" data-role="superadmin" onclick="window.location.href='../partner/monitor-vendas.html'"><i data-lucide="bar-chart-3" style="width: 18px; height: 18px;"></i>Monitor de Vendas</div>
+
+        <!-- CATEGORIA: EXTRANET (PARCEIROS) -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Extranet (Visão Parceiro)</div>
+        <div class="nav-item" id="nav-item-resumo" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=resumo'"><i data-lucide="store" style="width: 18px; height: 18px;"></i>Painel Operacional</div>
+        <div class="nav-item active" id="nav-item-produtos" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-setup.html'"><i data-lucide="package" style="width: 18px; height: 18px;"></i>Catálogo de Produtos</div>
+        <div class="nav-item" id="nav-item-calendario" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=calendario'"><i data-lucide="calendar" style="width: 18px; height: 18px;"></i>Estoque & Lotes</div>
+        <div class="nav-item" id="nav-item-validador" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=validador'"><i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>Validador de Voucher</div>
+        <div class="nav-item" id="nav-item-financeiro" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=financeiro'"><i data-lucide="wallet" style="width: 18px; height: 18px;"></i>Extrato Financeiro</div>
+        <div class="nav-item" id="nav-item-perfil" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=perfil'"><i data-lucide="user" style="width: 18px; height: 18px;"></i>Dados Cadastrais</div>
+
+        <!-- CATEGORIA: CANAIS B2C -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Canais B2C</div>
+        <div class="nav-item" onclick="window.open('../index.html', '_blank')"><i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>Marketplace B2C <i data-lucide="external-link" style="width: 12px; height: 12px; margin-left: auto;"></i></div>
+      </nav>
+      
+      <div style="margin-top: auto; padding: 16px; background: rgba(139, 92, 246, 0.05); border-radius: var(--border-radius-md); border: 1px solid rgba(139, 92, 246, 0.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Logado como:<br><strong id="session-username">Aguardando...</strong></p>
+        <button onclick="logoutSession()" style="width: 100%; padding: 6px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; border-style: solid;">
+          <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1 id="setup-title">Catálogo de Produtos</h1>
+          <p class="subtitle" id="setup-subtitle" style="margin: 0;">Cadastre e gerencie os itens e pacotes que serão expostos na vitrine B2C.</p>
+        </div>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <!-- Theme Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+            <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+            <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+          </button>
+          
+          <button class="btn-primary" id="btn-show-form" onclick="mostrarFormulario()">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Novo Produto
+          </button>
+        </div>
+      </header>
+
+      <!-- Lista de Produtos Cadastrados -->
+      <div id="lista-produtos" class="animate-fade">
+        <div class="tab-menu">
+          <div class="tab active">Todos os Produtos</div>
+          <div class="tab">Combos Criados</div>
+          <div class="tab">Histórico de Alterações</div>
+        </div>
+
+        <div class="product-list" id="dynamic-product-list">
+          <!-- Item 1 -->
+          <div class="product-row">
+            <div style="display: flex; align-items: center; gap: 20px;">
+              <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=150&q=80" alt="Suíte Presidencial">
+              <div>
+                <h3 style="margin: 0 0 6px 0; font-size: 1.1rem;">Diária - Suíte Presidencial Resort</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; display: flex; align-items: center; gap: 4px;">
+                  <i data-lucide="bed-double" style="width:14px; height:14px;"></i> Hospedagem | Unidade: Quarto
+                </p>
+              </div>
+            </div>
+            <div style="text-align: right; margin-right: 24px;">
+              <p style="font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--text-main); font-family: var(--font-title);">R$ 1.200,00</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Valor da diária base</p>
+            </div>
+            <div>
+              <span class="status-badge status-confirmed"><i data-lucide="check" style="width: 12px; height: 12px;"></i> Publicado</span>
+            </div>
+            <button class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; margin-left: 20px;" onclick="window.location.href='b2b-restaurante.html'">
+              <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> Lotes
+            </button>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="product-row">
+            <div style="display: flex; align-items: center; gap: 20px;">
+              <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=150&q=80" alt="Fondue Premium">
+              <div>
+                <h3 style="margin: 0 0 6px 0; font-size: 1.1rem;">Jantar Romântico com Sequência de Fondue</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; display: flex; align-items: center; gap: 4px;">
+                  <i data-lucide="utensils" style="width:14px; height:14px;"></i> Gastronomia | Unidade: Mesa p/ 2
+                </p>
+              </div>
+            </div>
+            <div style="text-align: right; margin-right: 24px;">
+              <p style="font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--text-main); font-family: var(--font-title);">R$ 350,00</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Valor p/ casal</p>
+            </div>
+            <div>
+              <span class="status-badge status-lock"><i data-lucide="clock" style="width: 12px; height: 12px;"></i> Lote Aberto</span>
+            </div>
+            <button class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; margin-left: 20px;" onclick="window.location.href='b2b-restaurante.html'">
+              <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> Lotes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulário de Onboarding (Wizard) -->
+      <div id="form-novo-produto" style="display: none;" class="animate-fade">
+        
+        <!-- Step Indicators -->
+        <div class="step-indicator">
+          <div class="step active" id="step-1-indicator">1</div>
+          <div class="step" id="step-2-indicator">2</div>
+          <div class="step" id="step-3-indicator">3</div>
+        </div>
+
+        <div class="setup-container">
+          <!-- Coluna Esquerda: Form Wizard -->
+          <div class="glass-panel" style="padding: 32px;">
+            
+            <!-- STEP 1: DADOS BÁSICOS -->
+            <div class="wizard-step active" id="step-1">
+              <h3 style="margin-bottom: 20px; color: var(--accent-purple);">Passo 1: Identificação</h3>
+              
+              <div class="form-group">
+                <label for="prod-name">Nome do Produto / Experiência</label>
+                <input type="text" id="prod-name" placeholder="Ex: Café Colonial dos Alpes Premium" oninput="syncPreview()">
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                  <label for="prod-category">Categoria do Negócio</label>
+                  <select id="prod-category" onchange="syncPreview()">
+                    <option value="gastronomia">Gastronomia (Local)</option>
+                    <option value="hotel">Hospedagem & Resort</option>
+                    <option value="PWI">Atração / Parque (PWI)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="prod-unit">Unidade de Venda</label>
+                  <select id="prod-unit">
+                    <option>Por Pessoa (Individual)</option>
+                    <option>Por Mesa (Casal / Família)</option>
+                    <option>Por Quarto / Diária</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="prod-desc">Descrição do Produto (Aparece no portal B2C)</label>
+                <textarea id="prod-desc" rows="4" placeholder="Detalhes do que está incluso, duração, etc..." oninput="syncPreview()"></textarea>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; margin-top: 32px;">
+                <button class="btn-primary" onclick="nextStep(2)">Avançar <i data-lucide="arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- STEP 2: PREÇO E REGRAS -->
+            <div class="wizard-step" id="step-2">
+              <h3 style="margin-bottom: 20px; color: var(--accent-purple);">Passo 2: Precificação & Regras</h3>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                  <label for="prod-price">Preço Base (R$)</label>
+                  <input type="number" id="prod-price" placeholder="R$ 0,00" value="180" oninput="syncPreview()">
+                </div>
+                <div class="form-group">
+                  <label for="prod-rm">Integração com SentinelK RM?</label>
+                  <select id="prod-rm">
+                    <option>Sim, habilitar precificação dinâmica</option>
+                    <option>Não, preço fixo no lote</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="prod-rules">Regras de Cancelamento</label>
+                <select id="prod-rules">
+                  <option>Reembolso integral até 24h antes</option>
+                  <option>Reembolso até 7 dias da compra</option>
+                  <option>Sem cancelamento (Ingressos PWI)</option>
+                </select>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; margin-top: 32px;">
+                <button class="btn-secondary" onclick="nextStep(1)"><i data-lucide="arrow-left"></i> Voltar</button>
+                <button class="btn-primary" onclick="nextStep(3)">Avançar <i data-lucide="arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- STEP 3: MÍDIA & CONCLUSÃO -->
+            <div class="wizard-step" id="step-3">
+              <h3 style="margin-bottom: 20px; color: var(--accent-purple);">Passo 3: Mídia do Produto</h3>
+              
+              <div class="form-group">
+                <label>Foto de Capa</label>
+                <div class="file-upload" onclick="simulateImageUpload()">
+                  <i data-lucide="image" style="width: 40px; height: 40px; margin: 0 auto 10px; display: block;"></i>
+                  <span>Clique para simular upload ou escolha uma foto padrão</span>
+                </div>
+                <input type="hidden" id="uploaded-img-url" value="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80">
+              </div>
+
+              <div style="display: flex; justify-content: space-between; margin-top: 32px;">
+                <button class="btn-secondary" onclick="nextStep(2)"><i data-lucide="arrow-left"></i> Voltar</button>
+                <button class="btn-primary" style="background: var(--accent-green);" onclick="salvarProdutoWizard()">
+                  <i data-lucide="save"></i> Salvar e Publicar
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Coluna Direita: Live B2C Card Preview -->
+          <div class="live-preview-panel glass-panel">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="eye" style="color: var(--accent-blue);"></i> Visualização do Cliente (B2C Preview)
+            </h3>
+            
+            <!-- B2C product card simulation -->
+            <div class="product-card glass-panel" style="max-width: 320px; margin: 0 auto; cursor: default; transform: none; box-shadow: none;">
+              <div class="product-badge" id="preview-badge">
+                <i data-lucide="utensils" style="width: 14px; height: 14px;"></i>
+                <span id="preview-badge-text">Gastronomia</span>
+              </div>
+              <img id="preview-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80" alt="Preview Capa" class="product-img">
+              <div class="product-info">
+                <span class="item-tag tag-api">Cod: PREVIEW</span>
+                <h3 style="margin: 8px 0; font-size: 1.25rem;" id="preview-name">Café Colonial dos Alpes Premium</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 20px;" id="preview-desc">
+                  Insira uma descrição para ver como seu produto se apresentará no marketplace.
+                </p>
+                <div class="price-row" style="margin-top: auto; padding-top: 16px;">
+                  <div>
+                    <p style="font-size: 1.3rem; font-weight: 800; color: var(--text-main); font-family: var(--font-title);" id="preview-price">
+                      R$ 180,00
+                    </p>
+                  </div>
+                  <button class="btn-primary" style="padding: 10px 18px; font-size: 0.85rem; pointer-events: none; opacity: 0.8;">
+                    Comprar
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 20px;">
+              As informações digitadas atualizam este cartão em tempo real.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    let currentStep = 1;
+
+    function mostrarFormulario() {
+      document.getElementById('lista-produtos').style.display = 'none';
+      document.getElementById('form-novo-produto').style.display = 'block';
+      document.getElementById('btn-show-form').style.display = 'none';
+      document.getElementById('setup-title').innerText = "Cadastrar Experiência";
+      document.getElementById('setup-subtitle').innerText = "Preencha o formulário em etapas para enviar as quotas ao SentinelK.";
+      
+      // Reset wizard status
+      currentStep = 1;
+      showStep(1);
+    }
+
+    function ocultarFormulario() {
+      document.getElementById('form-novo-produto').style.display = 'none';
+      document.getElementById('lista-produtos').style.display = 'block';
+      document.getElementById('btn-show-form').style.display = 'block';
+      document.getElementById('setup-title').innerText = "Catálogo de Produtos";
+      document.getElementById('setup-subtitle').innerText = "Cadastre e gerencie os itens e pacotes que serão expostos na vitrine B2C.";
+    }
+
+    function showStep(stepNum) {
+      document.querySelectorAll('.wizard-step').forEach(step => step.classList.remove('active'));
+      document.querySelectorAll('.step').forEach(indicator => indicator.classList.remove('active', 'completed'));
+      
+      document.getElementById('step-' + stepNum).classList.add('active');
+      
+      for(let i = 1; i <= 3; i++) {
+        const ind = document.getElementById('step-' + i + '-indicator');
+        if (i < stepNum) {
+          ind.classList.add('completed');
+        } else if (i === stepNum) {
+          ind.classList.add('active');
+        }
+      }
+    }
+
+    function nextStep(stepNum) {
+      // Validação básica do Passo 1
+      if (currentStep === 1 && stepNum === 2) {
+        const name = document.getElementById('prod-name').value;
+        if (!name) {
+          alert("Por favor, preencha o Nome do Produto.");
+          return;
+        }
+      }
+      
+      currentStep = stepNum;
+      showStep(stepNum);
+      lucide.createIcons();
+    }
+
+    // Live Preview Sync
+    function syncPreview() {
+      const name = document.getElementById('prod-name').value || "Café Colonial dos Alpes Premium";
+      const desc = document.getElementById('prod-desc').value || "Insira uma descrição para ver como seu produto se apresentará no marketplace.";
+      const price = parseFloat(document.getElementById('prod-price').value || 0);
+      const cat = document.getElementById('prod-category').value;
+      const imgUrl = document.getElementById('uploaded-img-url').value;
+
+      document.getElementById('preview-name').innerText = name;
+      document.getElementById('preview-desc').innerText = desc;
+      document.getElementById('preview-price').innerText = "R$ " + price.toFixed(2).replace('.', ',');
+      document.getElementById('preview-img').src = imgUrl;
+
+      // Update badge category and icon
+      const badgeText = document.getElementById('preview-badge-text');
+      const badge = document.getElementById('preview-badge');
+
+      if (cat === 'gastronomia') {
+        badgeText.innerText = "Gastronomia";
+        badge.innerHTML = `<i data-lucide="utensils" style="width:14px; height:14px;"></i> <span>Gastronomia</span>`;
+      } else if (cat === 'hotel') {
+        badgeText.innerText = "Hospedagem";
+        badge.innerHTML = `<i data-lucide="bed-double" style="width:14px; height:14px;"></i> <span>Hospedagem</span>`;
+      } else {
+        badgeText.innerText = "Parque (PWI)";
+        badge.innerHTML = `<i data-lucide="ticket" style="width:14px; height:14px;"></i> <span>Parque (PWI)</span>`;
+      }
+      
+      lucide.createIcons();
+    }
+
+    function simulateImageUpload() {
+      const imagesMock = [
+        "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80", // Chocolate fondue
+        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=500&q=80", // Resort pool
+        "https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=500&q=80"  // Park snow cabin
+      ];
+      
+      const cat = document.getElementById('prod-category').value;
+      let selectedImg = imagesMock[0];
+      if (cat === 'hotel') selectedImg = imagesMock[1];
+      if (cat === 'PWI') selectedImg = imagesMock[2];
+
+      document.getElementById('uploaded-img-url').value = selectedImg;
+      syncPreview();
+      
+      alert("Sucesso! Upload de imagem simulado.\nA capa do preview foi atualizada com um asset representativo da categoria.");
+    }
+
+    // Shared DB utilities for mock persistence
+    function getEstablishments() {
+      let list = localStorage.getItem('sentinelk_establishments');
+      if (!list) {
+        const defaultPartners = [
+          {
+            id: "PART-101",
+            companyName: "Snowland Park S/A",
+            tradeName: "Snowland Park",
+            cnpj: "12.345.678/0001-90",
+            category: "parque",
+            phone: "(54) 3295-7700",
+            cep: "95670-000",
+            email: "contato@snowland.com.br",
+            address: "RS-235, 9009",
+            city: "Gramado",
+            state: "RS",
+            bank: "Banco do Brasil",
+            agency: "0123",
+            account: "45678-9"
+          },
+          {
+            id: "PART-201",
+            companyName: "Alpino Hospedagens Ltda",
+            tradeName: "Resort Alpino",
+            cnpj: "98.765.432/0001-10",
+            category: "hotel",
+            phone: "(54) 3286-1122",
+            cep: "95670-000",
+            email: "reservas@resortalpino.com",
+            address: "Av. das Hortênsias, 5000",
+            city: "Gramado",
+            state: "RS",
+            bank: "Itaú Unibanco",
+            agency: "4321",
+            account: "98765-4"
+          },
+          {
+            id: "PART-301",
+            companyName: "Fondue Alpino Gastronomia Ltda",
+            tradeName: "Restaurante Alpino",
+            cnpj: "55.444.333/0001-22",
+            category: "gastronomia",
+            phone: "(54) 3286-9900",
+            cep: "95670-000",
+            email: "contato@restaurantealpino.com",
+            address: "Av. Borges de Medeiros, 2500",
+            city: "Gramado",
+            state: "RS",
+            bank: "Banco Santander",
+            agency: "9876",
+            account: "11223-4"
+          }
+        ];
+        localStorage.setItem('sentinelk_establishments', JSON.stringify(defaultPartners));
+        return defaultPartners;
+      }
+      return JSON.parse(list);
+    }
+
+    function getActivePartner() {
+      const establishments = getEstablishments();
+      let activeId = localStorage.getItem('active_partner_id');
+      if (!activeId) {
+        activeId = "PART-301";
+        localStorage.setItem('active_partner_id', activeId);
+      }
+      return establishments.find(e => e.id === activeId) || establishments[0];
+    }
+
+    function getProducts() {
+      let list = localStorage.getItem('sentinelk_products');
+      if (!list) {
+        const defaultProds = [
+          { id: "101", partnerId: "PART-101", nome: "Snowland Passaporte Adulto", preco: 169.00, categoria: "parque", descricao: "Acesso integral à montanha de neve, aluguel de roupas de frio e patinação no gelo.", imgUrl: "https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=500&q=80" },
+          { id: "201", partnerId: "PART-201", nome: "Suíte Alpina Luxo (Resort)", preco: 680.00, categoria: "hotel", descricao: "Diária para casal com café da manhã colonial incluso e vista para o vale.", imgUrl: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=500&q=80" },
+          { id: "301", partnerId: "PART-301", nome: "Fondue Premium Restaurante Alpino", preco: 350.00, categoria: "gastronomia", descricao: "Sequência completa de queijos suíços, carnes na pedra e chocolate de Gramado (Mesa para 2).", imgUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80" }
+        ];
+        localStorage.setItem('sentinelk_products', JSON.stringify(defaultProds));
+        return defaultProds;
+      }
+      return JSON.parse(list);
+    }
+
+    function populatePartnerSelector() {
+      const establishments = getEstablishments();
+      const selector = document.getElementById('partner-selector');
+      selector.innerHTML = "";
+      
+      establishments.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.innerText = e.tradeName;
+        selector.appendChild(opt);
+      });
+      
+      const activePartner = getActivePartner();
+      selector.value = activePartner.id;
+    }
+
+    function switchActivePartner(partnerId) {
+      localStorage.setItem('active_partner_id', partnerId);
+      const establishments = getEstablishments();
+      const p = establishments.find(e => e.id === partnerId);
+      if (p) {
+        document.getElementById('partner-name').innerText = p.tradeName;
+        document.getElementById('partner-avatar').innerText = p.tradeName.substring(0, 2).toUpperCase();
+        document.getElementById('partner-id').innerText = "ID: " + p.id;
+        document.getElementById('setup-title').innerText = "Catálogo de " + p.tradeName;
+        document.getElementById('setup-subtitle').innerText = "Cadastre e gerencie as quotas do seu menu ou serviços integrados ao SentinelK.";
+        
+        // Auto-set the category input to match partner's type
+        const catSelect = document.getElementById('prod-category');
+        if (p.category === 'parque') {
+          catSelect.value = 'PWI';
+        } else {
+          catSelect.value = p.category;
+        }
+        
+        // Set typical image url in upload url input field as fallback
+        const imagesMock = [
+          "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80",
+          "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=500&q=80",
+          "https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=500&q=80"
+        ];
+        if (p.category === 'hotel') document.getElementById('uploaded-img-url').value = imagesMock[1];
+        else if (p.category === 'parque') document.getElementById('uploaded-img-url').value = imagesMock[2];
+        else document.getElementById('uploaded-img-url').value = imagesMock[0];
+        
+        syncPreview();
+      }
+      
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const activePartner = getActivePartner();
+      const allProds = getProducts();
+      const partnerProds = allProds.filter(p => p.partnerId === activePartner.id);
+      
+      const list = document.getElementById('dynamic-product-list');
+      list.innerHTML = "";
+      
+      if (partnerProds.length === 0) {
+        list.innerHTML = `
+          <div style="text-align: center; padding: 48px; color: var(--text-muted); border: 1px dashed var(--glass-border); border-radius: 16px;">
+            <i data-lucide="package-open" style="width: 48px; height: 48px; margin: 0 auto 16px; display: block; opacity: 0.5;"></i>
+            Nenhum produto cadastrado para este estabelecimento. Cadastre seu primeiro item acima!
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+      
+      partnerProds.forEach(p => {
+        const icon = p.categoria === 'hotel' ? 'bed-double' : p.categoria === 'gastronomia' ? 'utensils' : 'ticket';
+        const catLabel = p.categoria === 'hotel' ? 'Hospedagem' : p.categoria === 'gastronomia' ? 'Gastronomia' : 'Parque (PWI)';
+        
+        const row = document.createElement('div');
+        row.className = 'product-row';
+        row.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <img src="${p.imgUrl}" alt="${p.nome}">
+            <div>
+              <h3 style="margin: 0 0 6px 0; font-size: 1.1rem;">${p.nome}</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; display: flex; align-items: center; gap: 4px;">
+                <i data-lucide="${icon}" style="width:14px; height:14px;"></i> ${catLabel}
+              </p>
+            </div>
+          </div>
+          <div style="text-align: right; margin-right: 24px;">
+            <p style="font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--text-main); font-family: var(--font-title);">R$ ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Valor cadastrado</p>
+          </div>
+          <div>
+            <span class="status-badge status-confirmed"><i data-lucide="check" style="width: 12px; height: 12px;"></i> Publicado</span>
+          </div>
+          <button class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; margin-left: 20px;" onclick="window.location.href='b2b-restaurante.html'">
+            <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> Lotes
+          </button>
+        `;
+        list.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    function salvarProdutoWizard() {
+      const name = document.getElementById('prod-name').value;
+      const price = parseFloat(document.getElementById('prod-price').value || 0);
+      const cat = document.getElementById('prod-category').value;
+      const desc = document.getElementById('prod-desc').value || "Sem descrição.";
+      const imgUrl = document.getElementById('uploaded-img-url').value;
+
+      const activePartner = getActivePartner();
+      const allProds = getProducts();
+      
+      const newProduct = {
+        id: "PROD-" + Math.floor(100000 + Math.random() * 900000),
+        partnerId: activePartner.id,
+        nome: name,
+        preco: price,
+        categoria: cat === 'PWI' ? 'parque' : cat,
+        descricao: desc,
+        imgUrl: imgUrl
+      };
+      
+      allProds.push(newProduct);
+      localStorage.setItem('sentinelk_products', JSON.stringify(allProds));
+      
+      alert("Sucesso!\nProduto cadastrado e persistido na base de dados do SentinelK.");
+      
+      ocultarFormulario();
+      renderProducts();
+    }
+
+    // Theme selector
+    function initTheme() {
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      } else {
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('light-theme')) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      getEstablishments(); // Ensure default db is created
+      
+      // Parse Query String to see if a partner has registered
+      const urlParams = new URLSearchParams(window.location.search);
+      const pName = urlParams.get('partner');
+      const pId = urlParams.get('id');
+      if (pId) {
+        localStorage.setItem('active_partner_id', pId);
+      }
+      
+      populatePartnerSelector();
+      switchActivePartner(localStorage.getItem('active_partner_id') || "PART-301");
+      
+      lucide.createIcons();
+      syncPreview();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+dist/
+
+# Mocks and logs
+*.log
+*.tar.gz
+
+# Environment variables
+.env
+.env.production
+.env.local
+.env.development
+
+# Scratch files and temporary scripts
+check-*.js
+search-*.js
+replace-*.js
+query*.sql
+query*.js
+read-*.js
+watch-*.js
+migrate.js
+update-*.js
+task-def-*.json
+route53-*.json
+
+# OS files
+.DS_Store
+Thumbs.db

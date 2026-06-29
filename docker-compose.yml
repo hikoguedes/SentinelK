@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # 1. MongoDB (Banco do Middleware)
+  mongodb:
+    image: mongo:4.4.18
+    container_name: middleware-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+    restart: unless-stopped
+
+  # 2. Mongo Express (Painel visual opcional do MongoDB)
+  mongo-express:
+    image: mongo-express
+    container_name: middleware-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:adminpassword@mongodb:27017/?authSource=admin
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=adminpassword
+    depends_on:
+      - mongodb
+
+  # 3. Backend API (Middleware SentinelK)
+  backend-api:
+    build: ./backend
+    container_name: middleware-api
+    restart: unless-stopped
+    ports:
+      - "3333:3333"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - PORT=3333
+      - MONGO_URL=mongodb://admin:adminpassword@mongodb:27017/middleware?authSource=admin
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mongodb
+
+  # 4. MySQL Database (Banco de dados do Parque Parceiro)
+  park-db:
+    image: mysql:8.0
+    container_name: mock-park-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=park_erp
+    ports:
+      - "3309:3306"
+    volumes:
+      - ./mock-park/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  # 5. Mock Park API (ERP / API da Catraca do Parque)
+  park-api:
+    build: ./mock-park
+    container_name: mock-park-api
+    ports:
+      - "4000:4000"
+    environment:
+      - DB_HOST=park-db
+      - DB_USER=root
+      - DB_PASS=rootpassword
+      - DB_NAME=park_erp
+    depends_on:
+      - park-db
+    restart: unless-stopped
+
+  # 6. Frontend Web Server (Nginx)
+  frontend:
+    image: nginx:alpine
+    container_name: middleware-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/usr/share/nginx/html
+    restart: unless-stopped

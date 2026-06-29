@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - AI API Onboarding</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    @media (max-width: 1024px) {
+      .grid-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Dropzone styling */
+    .dropzone {
+      border: 2px dashed var(--glass-border);
+      border-radius: var(--border-radius-md);
+      padding: 32px 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.01);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent-purple);
+      background: rgba(139, 92, 246, 0.05);
+    }
+    .dropzone i {
+      color: var(--accent-purple);
+    }
+
+    /* Timeline Pipeline */
+    .pipeline-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .pipeline-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-md);
+      transition: all 0.3s ease;
+    }
+    .pipeline-step.active {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.05);
+    }
+    .pipeline-step.success {
+      border-color: var(--accent-green);
+      background: rgba(16, 185, 129, 0.05);
+    }
+    .pipeline-step.failed {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .step-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: bold;
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+    }
+    .pipeline-step.active .step-icon {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+    .pipeline-step.success .step-icon {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      color: white;
+    }
+    .pipeline-step.failed .step-icon {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+    }
+
+    /* Terminal console styles */
+    .terminal-box {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', Courier, monospace;
+      color: #38bdf8;
+      font-size: 0.8rem;
+      height: 240px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+    }
+    .terminal-line {
+      margin: 0;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+    .terminal-info { color: #38bdf8; }
+    .terminal-success { color: #4ade80; }
+    .terminal-warn { color: #fbbf24; }
+    .terminal-error { color: #f87171; }
+
+    /* Monaco simulator */
+    .editor-wrapper {
+      margin-top: 24px;
+      display: none;
+    }
+    .code-editor-header {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-bottom: none;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .code-editor-body {
+      position: relative;
+      border: 1px solid #1e293b;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      background: #020617;
+      overflow: hidden;
+    }
+    .code-textarea {
+      width: 100%;
+      height: 400px;
+      background: transparent;
+      border: none;
+      resize: vertical;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      padding: 16px;
+      outline: none;
+      line-height: 1.5;
+    }
+    .pulse-blue {
+      animation: pulse-blue-anim 1.5s infinite alternate;
+    }
+    @keyframes pulse-blue-anim {
+      0% { box-shadow: 0 0 4px rgba(59, 130, 246, 0.4); }
+      100% { box-shadow: 0 0 16px rgba(59, 130, 246, 0.9); }
+    }
+    .pulse-purple {
+      animation: pulse-purple-anim 1.5s infinite alternate;
+    }
+    @keyframes pulse-purple-anim {
+      0% { box-shadow: 0 0 4px rgba(139, 92, 246, 0.4); }
+      100% { box-shadow: 0 0 16px rgba(139, 92, 246, 0.9); }
+    }
+    .spin {
+      animation: spin-anim 1s linear infinite;
+    }
+    @keyframes spin-anim {
+      to { transform: rotate(360deg); }
+    }
+    .sidebar-heading {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 16px 0 8px 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container animate-fade">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="../logo.png" alt="SentinelK Logo" style="height: 32px; width: auto; object-fit: contain;">
+          <span style="font-weight: 800; font-size: 1.3rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Admin</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Portal do Administrador</p>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px;">
+        <!-- CATEGORIA: GERAL -->
+        <div class="sidebar-heading" style="margin-top:0;" data-role="superadmin">Geral</div>
+        <div class="nav-item" data-role="superadmin" onclick="window.location.href='../partner/b2b.html'"><i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>Visão Geral (Admin)</div>
+
+        <!-- CATEGORIA: NÚCLEO SENTINELK -->
+        <div class="sidebar-heading" data-role="superadmin">Núcleo SentinelK</div>
+        <div class="nav-item" id="nav-item-sentinelk-dash" data-role="superadmin" onclick="window.location.href='../sentinelk/dashboard.html'"><i data-lucide="activity" style="width: 18px; height: 18px;"></i>SentinelK Dashboard</div>
+        <div class="nav-item" id="nav-item-sentinelk-network" data-role="superadmin" onclick="window.location.href='../sentinelk/network.html'"><i data-lucide="network" style="width: 18px; height: 18px;"></i>Rede de Integrações</div>
+        <div class="nav-item active" id="nav-item-sentinelk-onboarding" data-role="superadmin" onclick="window.location.href='../sentinelk/ai-onboarding.html'"><i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>Onboarding de IA</div>
+        <div class="nav-item" id="nav-item-sentinelk-recursos" data-role="superadmin" onclick="window.location.href='../sentinelk/recursos.html'"><i data-lucide="sliders" style="width: 18px; height: 18px;"></i>Parceiros e Recursos</div>
+
+        <!-- CATEGORIA: GESTÃO B2B -->
+        <div class="sidebar-heading" data-role="superadmin">Gestão B2B</div>
+        <div class="nav-item" id="nav-item-gerenciar-parceiros" data-role="superadmin" onclick="window.location.href='../partner/gerenciar-parceiros.html'"><i data-lucide="users" style="width: 18px; height: 18px;"></i>Gerenciar Parceiros</div>
+        <div class="nav-item" id="nav-item-cadastro-parceiro" data-role="superadmin" onclick="window.location.href='../partner/cadastro-parceiro.html'"><i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>Credenciar Parceiro</div>
+        <div class="nav-item" id="nav-item-monitor-vendas" data-role="superadmin" onclick="window.location.href='../partner/monitor-vendas.html'"><i data-lucide="bar-chart-3" style="width: 18px; height: 18px;"></i>Monitor de Vendas</div>
+
+        <!-- CATEGORIA: EXTRANET (PARCEIROS) -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Extranet (Visão Parceiro)</div>
+        <div class="nav-item" id="nav-item-resumo" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=resumo'"><i data-lucide="store" style="width: 18px; height: 18px;"></i>Painel Operacional</div>
+        <div class="nav-item" id="nav-item-produtos" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-setup.html'"><i data-lucide="package" style="width: 18px; height: 18px;"></i>Catálogo de Produtos</div>
+        <div class="nav-item" id="nav-item-calendario" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=calendario'"><i data-lucide="calendar" style="width: 18px; height: 18px;"></i>Estoque & Lotes</div>
+        <div class="nav-item" id="nav-item-validador" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=validador'"><i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>Validador de Voucher</div>
+        <div class="nav-item" id="nav-item-financeiro" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=financeiro'"><i data-lucide="wallet" style="width: 18px; height: 18px;"></i>Extrato Financeiro</div>
+        <div class="nav-item" id="nav-item-perfil" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=perfil'"><i data-lucide="user" style="width: 18px; height: 18px;"></i>Dados Cadastrais</div>
+
+        <!-- CATEGORIA: CANAIS B2C -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Canais B2C</div>
+        <div class="nav-item" onclick="window.open('../index.html', '_blank')"><i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>Marketplace B2C <i data-lucide="external-link" style="width: 12px; height: 12px; margin-left: auto;"></i></div>
+      </nav>
+      
+      <div style="margin-top: auto; padding: 16px; background: rgba(139, 92, 246, 0.05); border-radius: var(--border-radius-md); border: 1px solid rgba(139, 92, 246, 0.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Logado como:<br><strong id="session-username">Aguardando...</strong></p>
+        <button onclick="logoutSession()" style="width: 100%; padding: 6px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; border-style: solid;">
+          <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1>Onboarding de API via IA</h1>
+          <p class="subtitle" style="margin: 0;">Cole a documentação da API de um parceiro e deixe nossa inteligência artificial mapear, testar e publicar o adaptador de conexão.</p>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <span class="status-badge status-confirmed pulse-purple" style="font-size: 0.85rem; padding: 6px 14px; font-weight: 700; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3);">
+            <i data-lucide="sparkles" style="width:14px; height:14px; vertical-align: middle;"></i> Agente IA Ativo
+          </span>
+
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+            <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+            <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="grid-container">
+        <!-- Left: Upload & Document Form -->
+        <div class="glass-panel" style="padding: 24px; display: flex; flex-direction: column;">
+          <h3><i data-lucide="settings-2" style="color: var(--accent-blue); width: 18px; height: 18px; vertical-align: middle; margin-right: 6px;"></i> Configurações do Parceiro</h3>
+          <p class="subtitle" style="font-size: 0.85rem; margin-bottom: 20px;">Forneça o nome do novo parceiro e a especificação da API dele.</p>
+
+          <div class="form-input-group">
+            <label for="partner-name">Nome do Parceiro</label>
+            <input type="text" id="partner-name" placeholder="Ex: Parque Ecológico das Hortênsias">
+          </div>
+
+          <div class="form-input-group">
+            <label>Upload do Documento (Swagger, JSON, YAML, TXT)</label>
+            <div class="dropzone" id="file-dropzone" onclick="document.getElementById('file-input').click()">
+              <i data-lucide="file-text" style="width: 32px; height: 32px;"></i>
+              <div>
+                <p style="font-weight: 600; font-size: 0.9rem; margin: 0;">Arraste ou clique para enviar a documentação</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 4px 0 0 0;">Suporta arquivos de texto (.json, .yaml, .txt)</p>
+              </div>
+              <input type="file" id="file-input" style="display: none;" accept=".json,.yaml,.yml,.txt">
+            </div>
+          </div>
+
+          <div class="form-input-group" style="flex: 1; display: flex; flex-direction: column;">
+            <label for="api-doc">Especificação de Endpoints (Documentação Manual / Texto Copiado)</label>
+            <textarea id="api-doc" style="flex: 1; min-height: 200px;" placeholder="Cole aqui a documentação da API em texto livre, JSON, OpenAPI/Swagger YAML ou anotações técnicas..."></textarea>
+          </div>
+
+          <div style="margin-top: 16px; display: flex; gap: 12px;">
+            <button class="btn-primary pulse-blue" id="btn-generate" onclick="generateAdapter()" style="flex: 1;">
+              <i data-lucide="cpu" id="generate-icon"></i> <span id="generate-btn-text">Iniciar Onboarding com IA</span>
+            </button>
+            <button class="btn-secondary" onclick="clearForm()">Limpar Campos</button>
+          </div>
+        </div>
+
+        <!-- Right: Status Pipeline & Output Console -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <!-- Real-Time Pipeline -->
+          <div class="glass-panel" style="padding: 24px;">
+            <h3><i data-lucide="route" style="color: var(--accent-purple); width: 18px; height: 18px; vertical-align: middle; margin-right: 6px;"></i> Pipeline de Geração & Validação</h3>
+            <p class="subtitle" style="font-size: 0.85rem; margin-bottom: 20px;">Acompanhe o andamento da compilação em tempo real.</p>
+
+            <div class="pipeline-container">
+              <div class="pipeline-step" id="step-llm">
+                <div class="step-icon">1</div>
+                <div style="flex: 1;">
+                  <h4 style="margin: 0; font-size: 0.95rem;">Geração de Código Inteligente</h4>
+                  <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);" id="lbl-step-llm">Aguardando início do processo...</p>
+                </div>
+                <div id="step-llm-status"></div>
+              </div>
+
+              <div class="pipeline-step" id="step-sandbox">
+                <div class="step-icon">2</div>
+                <div style="flex: 1;">
+                  <h4 style="margin: 0; font-size: 0.95rem;">Compilação em Sandbox Segura</h4>
+                  <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);" id="lbl-step-sandbox">Validação da estrutura JavaScript nativa.</p>
+                </div>
+                <div id="step-sandbox-status"></div>
+              </div>
+
+              <div class="pipeline-step" id="step-contract">
+                <div class="step-icon">3</div>
+                <div style="flex: 1;">
+                  <h4 style="margin: 0; font-size: 0.95rem;">Mapeamento & Validação de Contrato</h4>
+                  <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);" id="lbl-step-contract">Verificação das funções do SentinelK (Disponibilidade, Soft Lock, Commit).</p>
+                </div>
+                <div id="step-contract-status"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Console Terminal -->
+          <div class="glass-panel" style="padding: 24px; flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="margin: 0;"><i data-lucide="terminal" style="color: var(--accent-green); width: 18px; height: 18px; vertical-align: middle; margin-right: 6px;"></i> Terminal de Logs da IA</h3>
+              <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;" onclick="clearLogs()">Limpar Logs</button>
+            </div>
+            <div class="terminal-box" id="terminal-box" style="flex: 1;">
+              <p class="terminal-line terminal-info">[SISTEMA] Pronto para receber documentação de API...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Playground Section (Only shows after successful compile) -->
+      <div class="glass-panel editor-wrapper" id="editor-wrapper" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="margin: 0;"><i data-lucide="code-2" style="color: var(--accent-blue); width: 18px; height: 18px; vertical-align: middle; margin-right: 6px;"></i> Código-Fonte do Adaptador Gerado</h3>
+            <p class="subtitle" style="font-size: 0.85rem; margin: 4px 0 0 0;">Você pode editar o código JavaScript diretamente antes de realizar a homologação final.</p>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <button class="btn-secondary" onclick="testCodeInSandbox()">
+              <i data-lucide="play" style="width: 14px; height: 14px;"></i> Testar na Sandbox
+            </button>
+            <button class="btn-primary pulse-purple" onclick="publishAdapter()" id="btn-publish">
+              <i data-lucide="upload-cloud" style="width: 14px; height: 14px;"></i> Publicar na AWS
+            </button>
+          </div>
+        </div>
+
+        <div class="code-editor-header">
+          <span style="font-size: 0.8rem; font-family: monospace; color: var(--text-muted);" id="editor-filename">adapter-dynamic.js</span>
+          <span style="font-size: 0.75rem; color: var(--accent-green); display: flex; align-items: center; gap: 4px;">
+            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i> Gerado em Sandbox
+          </span>
+        </div>
+        <div class="code-editor-body">
+          <textarea class="code-textarea" id="code-area" spellcheck="false"></textarea>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // State management
+    let generatedPartnerId = '';
+    let generatedCode = '';
+
+    function getApiUrl(path) {
+      const loc = window.location;
+      if (loc.pathname.startsWith('/admin')) {
+        return '/admin/api' + path;
+      }
+      return `${loc.protocol}//${loc.hostname}:3333/api${path}`;
+    }
+
+    // Logger Utility
+    function addLog(text, type = 'info') {
+      const box = document.getElementById('terminal-box');
+      const timeStr = new Date().toLocaleTimeString();
+      let cssClass = 'terminal-info';
+      if (type === 'success') cssClass = 'terminal-success';
+      if (type === 'warn') cssClass = 'terminal-warn';
+      if (type === 'error') cssClass = 'terminal-error';
+
+      const p = document.createElement('p');
+      p.className = `terminal-line ${cssClass}`;
+      p.innerHTML = `[${timeStr}] ${text}`;
+      box.appendChild(p);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function clearLogs() {
+      const box = document.getElementById('terminal-box');
+      box.innerHTML = '';
+      addLog('Terminal limpo.', 'info');
+    }
+
+    function clearForm() {
+      document.getElementById('partner-name').value = '';
+      document.getElementById('api-doc').value = '';
+      document.getElementById('file-input').value = '';
+      addLog('Campos do formulário resetados.', 'warn');
+    }
+
+    // Theme Management
+    function initTheme() {
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      } else {
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('light-theme')) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+    }
+
+    // File Drag and Drop / Select Setup
+    const dropzone = document.getElementById('file-dropzone');
+    const fileInput = document.getElementById('file-input');
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      addLog(`Arquivo recebido: ${file.name} (${Math.round(file.size / 1024)} KB)`, 'info');
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('api-doc').value = e.target.result;
+        addLog(`Conteúdo do arquivo ${file.name} carregado com sucesso para a especificação.`, 'success');
+      };
+      reader.onerror = () => {
+        addLog(`Erro ao ler o arquivo ${file.name}`, 'error');
+      };
+      reader.readAsText(file);
+    }
+
+    // Pipeline status updates
+    function setStepStatus(stepId, status, labelText = null) {
+      const step = document.getElementById(stepId);
+      const iconContainer = step.querySelector('#' + stepId + '-status');
+      const label = document.getElementById('lbl-' + stepId);
+      
+      step.className = 'pipeline-step';
+      
+      if (labelText) {
+        label.innerText = labelText;
+      }
+
+      if (status === 'pending') {
+        iconContainer.innerHTML = '';
+      } else if (status === 'active') {
+        step.classList.add('active');
+        iconContainer.innerHTML = `<i data-lucide="loader" class="spin" style="width: 16px; height: 16px; color: var(--accent-blue);"></i>`;
+      } else if (status === 'success') {
+        step.classList.add('success');
+        iconContainer.innerHTML = `<i data-lucide="check" style="width: 16px; height: 16px; color: var(--accent-green);"></i>`;
+      } else if (status === 'failed') {
+        step.classList.add('failed');
+        iconContainer.innerHTML = `<i data-lucide="alert-circle" style="width: 16px; height: 16px; color: #ef4444;"></i>`;
+      }
+      lucide.createIcons();
+    }
+
+    // AI Generation Call
+    async function generateAdapter() {
+      const partnerName = document.getElementById('partner-name').value.trim();
+      const apiDoc = document.getElementById('api-doc').value.trim();
+
+      if (!partnerName) {
+        alert('Por favor, informe o nome do parceiro.');
+        return;
+      }
+      if (!apiDoc) {
+        alert('Por favor, forneça a documentação da API.');
+        return;
+      }
+
+      // UI states
+      const btn = document.getElementById('btn-generate');
+      const btnText = document.getElementById('generate-btn-text');
+      const btnIcon = document.getElementById('generate-icon');
+
+      btn.disabled = true;
+      btnText.innerText = 'IA processando API...';
+      btnIcon.className = 'spin';
+      btnIcon.setAttribute('data-lucide', 'loader');
+      lucide.createIcons();
+
+      // Reset pipeline state
+      setStepStatus('step-llm', 'active', 'Gerando adaptador JS no GPT-4o...');
+      setStepStatus('step-sandbox', 'pending', 'Validação da estrutura JavaScript nativa.');
+      setStepStatus('step-contract', 'pending', 'Verificação das funções do SentinelK.');
+      
+      addLog(`[ONBOARDING] Iniciado credenciamento para "${partnerName}"`, 'info');
+      addLog(`[AI AGENT] Enviando documentação da API para o OpenAI GPT-4o...`, 'info');
+
+      try {
+        const res = await fetch(getApiUrl('/ai/generate'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ partnerName, apiDoc })
+        });
+
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Erro na geração de código.');
+        }
+
+        generatedPartnerId = data.partnerId;
+        generatedCode = data.code;
+
+        setStepStatus('step-llm', 'success', 'Código gerado com sucesso!');
+        addLog(`[AI AGENT] Código gerado com sucesso! PartnerID atribuído: ${data.partnerId}`, 'success');
+
+        // Proceed to Sandbox stage
+        await runSandboxValidation(data.code);
+
+      } catch (err) {
+        setStepStatus('step-llm', 'failed', `Falha: ${err.message}`);
+        addLog(`[ERRO AI AGENT] Falha na geração: ${err.message}`, 'error');
+        btn.disabled = false;
+        btnText.innerText = 'Iniciar Onboarding com IA';
+        btnIcon.className = '';
+        btnIcon.setAttribute('data-lucide', 'cpu');
+        lucide.createIcons();
+      }
+    }
+
+    async function runSandboxValidation(code) {
+      setStepStatus('step-sandbox', 'active', 'Instanciando código JavaScript na Sandbox VM...');
+      addLog(`[SANDBOX] Inicializando contexto seguro e criando VM Script...`, 'info');
+      
+      setStepStatus('step-contract', 'active', 'Avaliando se o adaptador cumpre a interface do SentinelK...');
+      addLog(`[CONTRATO] Testando endpoints: checkAvailability, createSoftLock, confirmBooking, cancelBooking...`, 'info');
+
+      try {
+        const res = await fetch(getApiUrl('/ai/test'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ code })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Código falhou nos testes da sandbox.');
+        }
+
+        setStepStatus('step-sandbox', 'success', 'Compilado sem erros globais.');
+        setStepStatus('step-contract', 'success', 'Todos os contratos de API validados com sucesso!');
+        addLog(`[SANDBOX] Código importado limpo!`, 'success');
+        addLog(`[CONTRATO] Assinatura do adaptador validada. 100% de cobertura de contrato!`, 'success');
+
+        // Show editor playground with the generated code
+        document.getElementById('editor-wrapper').style.display = 'block';
+        document.getElementById('code-area').value = code;
+        document.getElementById('editor-filename').innerText = `${generatedPartnerId.toLowerCase()}-adapter.js`;
+
+        // Smooth scroll to editor
+        document.getElementById('editor-wrapper').scrollIntoView({ behavior: 'smooth' });
+
+      } catch (err) {
+        setStepStatus('step-sandbox', 'failed', 'Compilação mal-sucedida.');
+        setStepStatus('step-contract', 'failed', `Falha de assinatura: ${err.message}`);
+        addLog(`[ERRO SANDBOX] Falha no teste: ${err.message}`, 'error');
+        
+        // Show editor even if compilation failed, to allow manual debugging
+        document.getElementById('editor-wrapper').style.display = 'block';
+        document.getElementById('code-area').value = code;
+        document.getElementById('editor-filename').innerText = `debug-${generatedPartnerId.toLowerCase()}-adapter.js`;
+        document.getElementById('editor-wrapper').scrollIntoView({ behavior: 'smooth' });
+      } finally {
+        const btn = document.getElementById('btn-generate');
+        const btnText = document.getElementById('generate-btn-text');
+        const btnIcon = document.getElementById('generate-icon');
+        btn.disabled = false;
+        btnText.innerText = 'Reiniciar Onboarding com IA';
+        btnIcon.className = '';
+        btnIcon.setAttribute('data-lucide', 'cpu');
+        lucide.createIcons();
+      }
+    }
+
+    // Testing edited code in Sandbox manually
+    async function testCodeInSandbox() {
+      const code = document.getElementById('code-area').value;
+      addLog(`[MANUAL TEST] Enviando alterações para execução em Sandbox...`, 'info');
+
+      try {
+        const res = await fetch(getApiUrl('/ai/test'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ code })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Código falhou nos testes.');
+        }
+
+        addLog(`[MANUAL TEST] Sucesso! Adaptador passou na Sandbox.`, 'success');
+        alert('Teste bem-sucedido! O adaptador passou em todas as checagens.');
+      } catch (err) {
+        addLog(`[MANUAL TEST ERRO] Falha: ${err.message}`, 'error');
+        alert(`O teste falhou:\n${err.message}`);
+      }
+    }
+
+    // Publish to production MongoDB
+    async function publishAdapter() {
+      const partnerName = document.getElementById('partner-name').value.trim();
+      const code = document.getElementById('code-area').value;
+      const apiDoc = document.getElementById('api-doc').value.trim();
+
+      if (!partnerName || !generatedPartnerId) {
+        alert('Nome do parceiro ausente.');
+        return;
+      }
+
+      addLog(`[PUBLISH] Publicando adaptador ${generatedPartnerId} para a AWS / MongoDB...`, 'info');
+      const btn = document.getElementById('btn-publish');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(getApiUrl('/ai/adapters'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            partnerId: generatedPartnerId,
+            partnerName,
+            code,
+            apiDoc
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Falha ao publicar adaptador.');
+        }
+
+        addLog(`[PUBLISH] Adaptador ${generatedPartnerId} publicado com sucesso na AWS! Ativo em Produção.`, 'success');
+        alert(`Parceiro ${partnerName} cadastrado e integrado com sucesso na produção do SentinelK!`);
+        
+        // Redirect to networks view to see it live
+        window.location.href = 'network.html';
+
+      } catch (err) {
+        addLog(`[PUBLISH ERRO] Falha ao publicar: ${err.message}`, 'error');
+        alert(`Erro de publicação:\n${err.message}`);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

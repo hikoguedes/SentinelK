@@ -1,0 +1,30 @@
+flowchart TD
+    Turista[Turista / B2C]
+    API_Planne[(API Planne\nCervejaria Farol)]
+    API_Museu[(API Museu\nVolpe ERP)]
+    Parceiro_Manual[Parceiro Local\nRestaurante Alpino]
+
+    subgraph Bloco_1_B2C [Mundo 1: Vitrine de Vendas]
+        Marketplace[[marketplace.html\nVitrine Hibrida B2C]]
+    end
+
+    subgraph Bloco_2_Hub [Mundo 2: O Cerebro SentinelK Admin]
+        SentinelNetwork[[sentinelk-network.html\nRede de Integracoes]]
+        SentinelDash[[sentinelk-dashboard.html\nMonitor de Trafego]]
+        B2BAdmin[[b2b.html\nVisao Geral Financeira]]
+    end
+
+    subgraph Bloco_3_Extranet [Mundo 3: Extranet B2B Parceiro sem API]
+        B2BSetup[[b2b-setup.html\nCadastro de Produtos]]
+        B2BRest[[b2b-restaurante.html\nPainel do Restaurante Validador]]
+    end
+
+    Turista -->|Acessa e Compra| Marketplace
+    
+    API_Planne -.->|Sincroniza Estoque| SentinelNetwork
+    API_Museu -.->|Sincroniza Estoque| SentinelNetwork
+    
+    Parceiro_Manual -->|Digita o Estoque a mao| B2BSetup
+    B2BSetup -->|Salva no Motor| SentinelNetwork
+    
+    SentinelNetwork ==>|Injeta Produtos| Marketplace

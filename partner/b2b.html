@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - Dashboard do Parceiro</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 1.8fr 1.2fr;
+      gap: 32px;
+      margin-top: 32px;
+    }
+    @media (max-width: 1024px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    .chart-container {
+      padding: 24px;
+      height: 320px;
+      position: relative;
+    }
+    
+    /* Interactive RM Buckets Styling */
+    .bucket-control {
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+    .bucket-control:hover {
+      border-color: var(--accent-purple);
+    }
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .slider-group input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent-purple);
+      cursor: pointer;
+    }
+    .slider-val {
+      font-weight: 700;
+      min-width: 48px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container animate-fade">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="../logo.png" alt="SentinelK Logo" style="height: 32px; width: auto; object-fit: contain;">
+          <span style="font-weight: 800; font-size: 1.3rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Admin</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Portal do Administrador</p>
+      </div>
+
+      <!-- Partner Info Selector -->
+      <div class="glass-panel" style="display: flex; align-items: center; gap: 12px; padding: 14px;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+          🎡
+        </div>
+        <div style="flex: 1; overflow: hidden;">
+          <p style="font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Snowland Park</p>
+          <p style="font-size: 0.75rem; color: var(--accent-green); display: flex; align-items: center; gap: 4px;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); display: inline-block;"></span> PWI Conectado
+          </p>
+        </div>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px;">
+        <!-- CATEGORIA: GERAL -->
+        <div class="sidebar-heading" style="margin-top:0;" data-role="superadmin,partner_manager">Geral</div>
+        <div class="nav-item active" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b.html'"><i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>Visão Geral (Admin)</div>
+
+        <!-- CATEGORIA: NÚCLEO SENTINELK -->
+        <div class="sidebar-heading" data-role="superadmin">Núcleo SentinelK</div>
+        <div class="nav-item" id="nav-item-sentinelk-dash" data-role="superadmin" onclick="window.location.href='../sentinelk/dashboard.html'"><i data-lucide="activity" style="width: 18px; height: 18px;"></i>SentinelK Dashboard</div>
+        <div class="nav-item" id="nav-item-sentinelk-network" data-role="superadmin" onclick="window.location.href='../sentinelk/network.html'"><i data-lucide="network" style="width: 18px; height: 18px;"></i>Rede de Integrações</div>
+        <div class="nav-item" id="nav-item-sentinelk-onboarding" data-role="superadmin" onclick="window.location.href='../sentinelk/ai-onboarding.html'"><i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>Onboarding de IA</div>
+        <div class="nav-item" id="nav-item-sentinelk-recursos" data-role="superadmin" onclick="window.location.href='../sentinelk/recursos.html'"><i data-lucide="sliders" style="width: 18px; height: 18px;"></i>Parceiros e Recursos</div>
+
+        <!-- CATEGORIA: GESTÃO B2B -->
+        <div class="sidebar-heading" data-role="superadmin">Gestão B2B</div>
+        <div class="nav-item" id="nav-item-gerenciar-parceiros" data-role="superadmin" onclick="window.location.href='../partner/gerenciar-parceiros.html'"><i data-lucide="users" style="width: 18px; height: 18px;"></i>Gerenciar Parceiros</div>
+        <div class="nav-item" id="nav-item-cadastro-parceiro" data-role="superadmin" onclick="window.location.href='../partner/cadastro-parceiro.html'"><i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>Credenciar Parceiro</div>
+        <div class="nav-item" id="nav-item-monitor-vendas" data-role="superadmin" onclick="window.location.href='../partner/monitor-vendas.html'"><i data-lucide="bar-chart-3" style="width: 18px; height: 18px;"></i>Monitor de Vendas</div>
+
+        <!-- CATEGORIA: EXTRANET (PARCEIROS) -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Extranet (Visão Parceiro)</div>
+        <div class="nav-item" id="nav-item-resumo" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=resumo'"><i data-lucide="store" style="width: 18px; height: 18px;"></i>Painel Operacional</div>
+        <div class="nav-item" id="nav-item-produtos" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-setup.html'"><i data-lucide="package" style="width: 18px; height: 18px;"></i>Catálogo de Produtos</div>
+        <div class="nav-item" id="nav-item-calendario" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=calendario'"><i data-lucide="calendar" style="width: 18px; height: 18px;"></i>Estoque & Lotes</div>
+        <div class="nav-item" id="nav-item-validador" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=validador'"><i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>Validador de Voucher</div>
+        <div class="nav-item" id="nav-item-financeiro" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=financeiro'"><i data-lucide="wallet" style="width: 18px; height: 18px;"></i>Extrato Financeiro</div>
+        <div class="nav-item" id="nav-item-perfil" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=perfil'"><i data-lucide="user" style="width: 18px; height: 18px;"></i>Dados Cadastrais</div>
+
+        <!-- CATEGORIA: CANAIS B2C -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Canais B2C</div>
+        <div class="nav-item" onclick="window.open('../index.html', '_blank')"><i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>Marketplace B2C <i data-lucide="external-link" style="width: 12px; height: 12px; margin-left: auto;"></i></div>
+      </nav>
+      
+      <div style="margin-top: auto; padding: 16px; background: rgba(139, 92, 246, 0.05); border-radius: var(--border-radius-md); border: 1px solid rgba(139, 92, 246, 0.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Logado como:<br><strong id="session-username">Aguardando...</strong></p>
+        <button onclick="logoutSession()" style="width: 100%; padding: 6px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; border-style: solid;">
+          <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1>Dashboard de Operações</h1>
+          <p class="subtitle" style="margin: 0;">Acompanhe as vendas consolidadas e configure a flutuação do Revenue Management.</p>
+        </div>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <!-- Theme Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+            <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+            <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+          </button>
+          
+          <button class="btn-secondary" style="padding: 10px 20px;" onclick="exportReport()">
+            <i data-lucide="download" style="width: 16px; height: 16px;"></i> Exportar Relatório
+          </button>
+        </div>
+      </header>
+
+      <!-- Stats Grid -->
+      <div class="dashboard-grid">
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+            <span style="font-size: 0.9rem; font-weight: 500;">Ingressos Vendidos (Hoje)</span>
+            <i data-lucide="ticket" style="width: 20px; height: 20px; color: var(--accent-purple);"></i>
+          </div>
+          <span class="stat-value" id="stat-sold">1.284</span>
+          <p style="color: var(--accent-green); font-size: 0.8rem; display: flex; align-items: center; gap: 4px; font-weight: 600;">
+            <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> +14% em relação a ontem
+          </p>
+        </div>
+        
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+            <span style="font-size: 0.9rem; font-weight: 500;">Taxa de Ocupação Média</span>
+            <i data-lucide="bar-chart-2" style="width: 20px; height: 20px; color: var(--accent-blue);"></i>
+          </div>
+          <span class="stat-value" id="stat-occupancy" style="background: var(--gradient-primary); -webkit-background-clip: text;">82%</span>
+          <p style="color: var(--text-muted); font-size: 0.8rem;">Capacidade limite: 1.500/dia</p>
+        </div>
+        
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+            <span style="font-size: 0.9rem; font-weight: 500;">Faturamento Bruto (Dia)</span>
+            <i data-lucide="dollar-sign" style="width: 20px; height: 20px; color: var(--accent-green);"></i>
+          </div>
+          <span class="stat-value" id="stat-revenue">R$ 154K</span>
+          <p style="color: var(--accent-green); font-size: 0.8rem; display: flex; align-items: center; gap: 4px; font-weight: 600;">
+            <i data-lucide="check" style="width: 14px; height: 14px;"></i> Meta diária atingida
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Dash Content Split -->
+      <div class="dashboard-container">
+        
+        <!-- Left Column: Chart -->
+        <div class="glass-panel chart-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="activity" style="color: var(--accent-blue); width: 18px; height: 18px;"></i> Fluxo de Vendas por Hora
+            </h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Atualizado via Webhook há 2 min</span>
+          </div>
+          <canvas id="salesChart"></canvas>
+        </div>
+
+        <!-- Right Column: Interactive RM Engine -->
+        <div class="glass-panel revenue-buckets">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="zap" style="color: var(--accent-orange); width: 18px; height: 18px;"></i> Configuração de RM
+            </h3>
+            <span class="status-badge status-confirmed">Modo Automático</span>
+          </div>
+          <p class="subtitle" style="font-size: 0.85rem; margin-bottom: 24px;">Configure a distribuição dos lotes de precificação dinâmica.</p>
+
+          <!-- Interactive Bucket Promo -->
+          <div class="bucket-control">
+            <div class="bucket-header">
+              <span><strong>Lote Promo</strong> (Preço Base: R$ 120)</span>
+              <span id="promo-status" style="color: var(--accent-green); font-weight: 600;">Esgotado</span>
+            </div>
+            <div class="slider-group">
+              <input type="range" id="promo-range" min="0" max="100" value="100" oninput="updateRMData()">
+              <span class="slider-val" id="promo-val">100%</span>
+            </div>
+            <div class="progress-bar" style="margin-top: 12px;">
+              <div class="progress-fill fill-promo" id="bar-promo" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <!-- Interactive Bucket Standard -->
+          <div class="bucket-control">
+            <div class="bucket-header">
+              <span><strong>Lote Standard</strong> (Preço Base: R$ 180)</span>
+              <span id="standard-status" style="color: var(--accent-blue); font-weight: 600;">Vendido</span>
+            </div>
+            <div class="slider-group">
+              <input type="range" id="standard-range" min="0" max="100" value="75" oninput="updateRMData()">
+              <span class="slider-val" id="standard-val">75%</span>
+            </div>
+            <div class="progress-bar" style="margin-top: 12px;">
+              <div class="progress-fill fill-standard" id="bar-standard" style="width: 75%;"></div>
+            </div>
+          </div>
+
+          <!-- Interactive Bucket Last Minute -->
+          <div class="bucket-control">
+            <div class="bucket-header">
+              <span><strong>Lote Last Minute</strong> (Preço Base: R$ 250)</span>
+              <span id="last-status" style="color: var(--text-muted); font-weight: 600;">Ocioso</span>
+            </div>
+            <div class="slider-group">
+              <input type="range" id="last-range" min="0" max="100" value="5" oninput="updateRMData()">
+              <span class="slider-val" id="last-val">5%</span>
+            </div>
+            <div class="progress-bar" style="margin-top: 12px;">
+              <div class="progress-fill fill-last" id="bar-last" style="width: 5%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let salesChartInstance = null;
+
+    // Inicialização do Gráfico Chart.js
+    function initChart() {
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      const isLight = document.body.classList.contains('light-theme');
+      
+      const gridColor = isLight ? 'rgba(15, 23, 42, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+      const textColor = isLight ? '#475569' : '#94a3b8';
+
+      salesChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
+          datasets: [{
+            label: 'Ingressos Emitidos',
+            data: [120, 240, 480, 710, 850, 1020, 1190, 1284],
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointBackgroundColor: '#8b5cf6',
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            }
+          }
+        }
+      });
+    }
+
+    // Função de Interação do RM Buckets
+    function updateRMData() {
+      const pVal = document.getElementById('promo-range').value;
+      const sVal = document.getElementById('standard-range').value;
+      const lVal = document.getElementById('last-range').value;
+
+      document.getElementById('promo-val').innerText = pVal + '%';
+      document.getElementById('standard-val').innerText = sVal + '%';
+      document.getElementById('last-val').innerText = lVal + '%';
+
+      document.getElementById('bar-promo').style.width = pVal + '%';
+      document.getElementById('bar-standard').style.width = sVal + '%';
+      document.getElementById('bar-last').style.width = lVal + '%';
+
+      // Dinamicamente muda o status text
+      document.getElementById('promo-status').innerText = pVal == 100 ? 'Esgotado' : pVal > 0 ? 'Ativo' : 'Pausado';
+      document.getElementById('promo-status').style.color = pVal == 100 ? 'var(--accent-orange)' : pVal > 0 ? 'var(--accent-green)' : 'var(--text-muted)';
+
+      document.getElementById('standard-status').innerText = sVal == 100 ? 'Esgotado' : sVal > 0 ? 'Vendido' : 'Aguardando';
+      document.getElementById('standard-status').style.color = sVal == 100 ? 'var(--accent-orange)' : sVal > 0 ? 'var(--accent-blue)' : 'var(--text-muted)';
+
+      document.getElementById('last-status').innerText = lVal > 50 ? 'Crítico (Last Call)' : lVal > 0 ? 'Gatilho Ativo' : 'Ocioso';
+      document.getElementById('last-status').style.color = lVal > 50 ? 'var(--accent-orange)' : lVal > 0 ? 'var(--accent-purple)' : 'var(--text-muted)';
+
+      // Simula alteração de faturamento bruto na tela baseado nos sliders
+      const totalSold = Math.floor(1000 + (parseInt(pVal) + parseInt(sVal) + parseInt(lVal)) * 1.5);
+      const totalRevenue = Math.floor(totalSold * 125);
+      
+      document.getElementById('stat-sold').innerText = totalSold.toLocaleString('pt-BR');
+      document.getElementById('stat-revenue').innerText = 'R$ ' + Math.floor(totalRevenue / 1000) + 'K';
+      document.getElementById('stat-occupancy').innerText = Math.min(100, Math.floor((totalSold / 1500) * 100)) + '%';
+    }
+
+    function exportReport() {
+      alert("Relatório formatado em CSV exportado com sucesso! Inclui todos os logs de vendas e split das últimas 24 horas.");
+    }
+
+    // Theme selector
+    function initTheme() {
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      } else {
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('light-theme')) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+      
+      // Destrói e recria o gráfico com as cores corretas
+      if (salesChartInstance) {
+        salesChartInstance.destroy();
+      }
+      initChart();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      initChart();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

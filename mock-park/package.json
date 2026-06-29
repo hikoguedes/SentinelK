@@ -1,0 +1,13 @@
+{
+  "name": "mock-park-api",
+  "version": "1.0.0",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.19.2",
+    "mysql2": "^3.9.7",
+    "qrcode": "^1.5.3"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

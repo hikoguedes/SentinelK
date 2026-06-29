@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - Monitoramento de Vendas & Splits</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .filter-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .filter-item {
+      flex: 1;
+      min-width: 200px;
+    }
+    .filter-item label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .sk-select, .sk-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .sk-select:focus, .sk-input:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    }
+    .sk-select option {
+      background: var(--bg-dark);
+      color: var(--text-main);
+    }
+
+    /* Split Details Badges */
+    .split-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .split-sentinel {
+      background: rgba(139, 92, 246, 0.1);
+      color: #a78bfa;
+      border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+    .split-partner {
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .source-widget {
+      background: rgba(249, 115, 22, 0.1);
+      color: #ff9800;
+      border: 1px solid rgba(249, 115, 22, 0.2);
+    }
+    .source-b2c {
+      background: rgba(59, 130, 246, 0.1);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(2, 6, 23, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: var(--bg-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container animate-fade">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="../logo.png" alt="SentinelK Logo" style="height: 32px; width: auto; object-fit: contain;">
+          <span style="font-weight: 800; font-size: 1.3rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Admin</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Portal do Administrador</p>
+      </div>
+
+      <!-- Partner Info Selector -->
+      <div class="glass-panel" style="display: flex; align-items: center; gap: 12px; padding: 14px;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+          🛡️
+        </div>
+        <div style="flex: 1; overflow: hidden;">
+          <p style="font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">SentinelK Core</p>
+          <p style="font-size: 0.75rem; color: var(--accent-purple); display: flex; align-items: center; gap: 4px;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent-purple); display: inline-block;"></span> Sistema de Split Ativo
+          </p>
+        </div>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px;">
+        <!-- CATEGORIA: GERAL -->
+        <div class="sidebar-heading" style="margin-top:0;" data-role="superadmin">Geral</div>
+        <div class="nav-item" data-role="superadmin" onclick="window.location.href='../partner/b2b.html'"><i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>Visão Geral (Admin)</div>
+
+        <!-- CATEGORIA: NÚCLEO SENTINELK -->
+        <div class="sidebar-heading" data-role="superadmin">Núcleo SentinelK</div>
+        <div class="nav-item" id="nav-item-sentinelk-dash" data-role="superadmin" onclick="window.location.href='../sentinelk/dashboard.html'"><i data-lucide="activity" style="width: 18px; height: 18px;"></i>SentinelK Dashboard</div>
+        <div class="nav-item" id="nav-item-sentinelk-network" data-role="superadmin" onclick="window.location.href='../sentinelk/network.html'"><i data-lucide="network" style="width: 18px; height: 18px;"></i>Rede de Integrações</div>
+        <div class="nav-item" id="nav-item-sentinelk-onboarding" data-role="superadmin" onclick="window.location.href='../sentinelk/ai-onboarding.html'"><i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>Onboarding de IA</div>
+        <div class="nav-item" id="nav-item-sentinelk-recursos" data-role="superadmin" onclick="window.location.href='../sentinelk/recursos.html'"><i data-lucide="sliders" style="width: 18px; height: 18px;"></i>Parceiros e Recursos</div>
+
+        <!-- CATEGORIA: GESTÃO B2B -->
+        <div class="sidebar-heading" data-role="superadmin">Gestão B2B</div>
+        <div class="nav-item" id="nav-item-gerenciar-parceiros" data-role="superadmin" onclick="window.location.href='../partner/gerenciar-parceiros.html'"><i data-lucide="users" style="width: 18px; height: 18px;"></i>Gerenciar Parceiros</div>
+        <div class="nav-item" id="nav-item-cadastro-parceiro" data-role="superadmin" onclick="window.location.href='../partner/cadastro-parceiro.html'"><i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>Credenciar Parceiro</div>
+        <div class="nav-item active" id="nav-item-monitor-vendas" data-role="superadmin" onclick="window.location.href='../partner/monitor-vendas.html'"><i data-lucide="bar-chart-3" style="width: 18px; height: 18px;"></i>Monitor de Vendas</div>
+
+        <!-- CATEGORIA: EXTRANET (PARCEIROS) -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Extranet (Visão Parceiro)</div>
+        <div class="nav-item" id="nav-item-resumo" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=resumo'"><i data-lucide="store" style="width: 18px; height: 18px;"></i>Painel Operacional</div>
+        <div class="nav-item" id="nav-item-produtos" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-setup.html'"><i data-lucide="package" style="width: 18px; height: 18px;"></i>Catálogo de Produtos</div>
+        <div class="nav-item" id="nav-item-calendario" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=calendario'"><i data-lucide="calendar" style="width: 18px; height: 18px;"></i>Estoque & Lotes</div>
+        <div class="nav-item" id="nav-item-validador" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=validador'"><i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>Validador de Voucher</div>
+        <div class="nav-item" id="nav-item-financeiro" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=financeiro'"><i data-lucide="wallet" style="width: 18px; height: 18px;"></i>Extrato Financeiro</div>
+        <div class="nav-item" id="nav-item-perfil" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=perfil'"><i data-lucide="user" style="width: 18px; height: 18px;"></i>Dados Cadastrais</div>
+
+        <!-- CATEGORIA: CANAIS B2C -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Canais B2C</div>
+        <div class="nav-item" onclick="window.open('../index.html', '_blank')"><i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>Marketplace B2C <i data-lucide="external-link" style="width: 12px; height: 12px; margin-left: auto;"></i></div>
+      </nav>
+
+      <div style="margin-top: auto; padding: 16px; background: rgba(139, 92, 246, 0.05); border-radius: var(--border-radius-md); border: 1px solid rgba(139, 92, 246, 0.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Logado como:<br><strong id="session-username">Aguardando...</strong></p>
+        <button onclick="logoutSession()" style="width: 100%; padding: 6px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; border-style: solid;">
+          <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1>Monitor de Vendas & Comissões B2B</h1>
+          <p class="subtitle" style="margin: 0;">Monitore transações em tempo real geradas pelos Widgets e Splits associados.</p>
+        </div>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <!-- Theme Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+            <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+            <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+          </button>
+          
+          <button class="btn-primary" style="padding: 10px 20px;" onclick="exportCSV()">
+            <i data-lucide="download" style="width: 16px; height: 16px;"></i> Exportar CSV
+          </button>
+        </div>
+      </header>
+
+      <!-- KPI Grid -->
+      <div class="dashboard-grid" style="margin-bottom: 32px;">
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); margin-bottom: 8px;">
+            <span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Volume Bruto</span>
+            <i data-lucide="dollar-sign" style="color: var(--accent-blue); width: 18px; height: 18px;"></i>
+          </div>
+          <span class="stat-value" id="kpi-gross" style="color: white;">R$ 0,00</span>
+          <p style="color: var(--text-muted); font-size: 0.75rem;">Total transacionado pelo middleware</p>
+        </div>
+
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); margin-bottom: 8px;">
+            <span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Taxa Retida (SentinelK)</span>
+            <i data-lucide="wallet" style="color: var(--accent-purple); width: 18px; height: 18px;"></i>
+          </div>
+          <span class="stat-value" id="kpi-commission" style="color: var(--accent-purple);">R$ 0,00</span>
+          <p style="color: var(--text-muted); font-size: 0.75rem;">Comissão média arrecadada</p>
+        </div>
+
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); margin-bottom: 8px;">
+            <span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Repasse Líquido</span>
+            <i data-lucide="arrow-right-left" style="color: var(--accent-green); width: 18px; height: 18px;"></i>
+          </div>
+          <span class="stat-value" id="kpi-repasse" style="color: var(--accent-green);">R$ 0,00</span>
+          <p style="color: var(--text-muted); font-size: 0.75rem;">A repassar para os parceiros B2B</p>
+        </div>
+
+        <div class="glass-panel stat-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); margin-bottom: 8px;">
+            <span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Total Transações</span>
+            <i data-lucide="activity" style="color: var(--accent-orange); width: 18px; height: 18px;"></i>
+          </div>
+          <span class="stat-value" id="kpi-count" style="color: white;">0</span>
+          <p style="color: var(--text-muted); font-size: 0.75rem;">Pedidos registrados na API</p>
+        </div>
+      </div>
+
+      <!-- Filters Panel -->
+      <div class="glass-panel" style="padding: 20px; margin-bottom: 24px;">
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label>Buscar Comprador ou Produto</label>
+            <input type="text" class="sk-input" id="search-text" placeholder="Nome do cliente, ID, produto..." oninput="applyFilters()">
+          </div>
+
+          <div class="filter-item">
+            <label>Filtrar por Parceiro / Canal</label>
+            <select class="sk-select" id="filter-partner" onchange="applyFilters()">
+              <option value="all">Todos os Canais</option>
+              <option value="PART-101">Snowland Park (PART-101)</option>
+              <option value="PART-201">Resort Alpino (PART-201)</option>
+              <option value="PART-301">Restaurante Alpino (PART-301)</option>
+              <option value="PART-PLANNE">Farol API (PLANNE)</option>
+            </select>
+          </div>
+
+          <div class="filter-item">
+            <label>Status do Pedido</label>
+            <select class="sk-select" id="filter-status" onchange="applyFilters()">
+              <option value="all">Todos os Status</option>
+              <option value="PAGO">Pago (Confirmado)</option>
+              <option value="AGUARDANDO_PAGAMENTO">Aguardando Pagamento</option>
+              <option value="ERRO_EMISSAO">Erro na Emissão</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="glass-panel" style="padding: 24px; overflow-x: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="list" style="color: var(--accent-purple); width: 20px; height: 20px;"></i> Extrato de Transações Recentes
+          </h3>
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;" onclick="loadOrders()">
+            <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Atualizar
+          </button>
+        </div>
+
+        <table class="table-dark">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Data/Hora</th>
+              <th>Origem Venda</th>
+              <th>Comprador</th>
+              <th>Produto & Qtd</th>
+              <th>Total</th>
+              <th>Split Comissão</th>
+              <th>Simular Webhook</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-body">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                Carregando transações do SentinelK...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="details-modal" class="modal-overlay" onclick="closeDetailsModal()">
+    <div class="modal-content glass-panel" onclick="event.stopPropagation()">
+      <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--glass-border); padding-bottom: 12px;">Detalhes do Pedido</h3>
+      <div id="modal-body-content" style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 12px;">
+        <!-- Preenchido dinamicamente -->
+      </div>
+      <button class="btn-secondary" style="width: 100%; margin-top: 24px;" onclick="closeDetailsModal()">Fechar</button>
+    </div>
+  </div>
+
+  <script>
+    let ordersList = [];
+    let partnerMap = {};
+
+    function getApiUrl(path) {
+      const loc = window.location;
+      if (loc.pathname.startsWith('/admin')) {
+        return '/admin/api' + path;
+      }
+      return `${loc.protocol}//${loc.hostname}:3333/api${path}`;
+    }
+
+    // Carregar parceiros da local storage para mapeamento visual
+    function loadPartnersMap() {
+      try {
+        const stored = localStorage.getItem('sentinelk_establishments');
+        if (stored) {
+          const list = JSON.parse(stored);
+          list.forEach(p => {
+            partnerMap[p.id] = p;
+          });
+        }
+      } catch (e) {
+        console.error("Falha ao ler estabelecimentos da localStorage:", e);
+      }
+    }
+
+    // Carregar Pedidos via API
+    async function loadOrders() {
+      const tbody = document.getElementById('orders-table-body');
+      try {
+        const res = await fetch(getApiUrl('/orders'));
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          ordersList = json.data;
+          renderOrders();
+        } else {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--accent-orange); padding: 40px;">Erro ao retornar dados da API.</td></tr>`;
+        }
+      } catch (e) {
+        console.warn("Backend offline. Usando mocks para a tela de monitoramento.");
+        simulateMockOrders();
+      }
+    }
+
+    // Gerar pedidos mockados para demonstração se a API offline
+    function simulateMockOrders() {
+      // Tenta simular a partir das reservas existentes
+      let simulated = [];
+      try {
+        const res = localStorage.getItem('sentinelk_reservations');
+        if (res) {
+          const list = JSON.parse(res);
+          simulated = list.map((r, index) => ({
+            _id: r.id || `ORD-${1000 + index}`,
+            createdAt: new Date(r.date + 'T12:00:00').toISOString(),
+            status: r.status === 'Check-in Realizado' ? 'PAGO' : 'AGUARDANDO_PAGAMENTO',
+            referredBy: r.partnerId,
+            total: r.price * r.qty,
+            clientData: {
+              name: r.name || "Cliente Teste",
+              email: "cliente@email.com",
+              cpf: "000.000.000-00",
+              phone: "11999998888"
+            },
+            items: [{
+              name: r.productName,
+              qty: r.qty,
+              price: r.price,
+              provider: r.partnerId
+            }]
+          }));
+        }
+      } catch(e) {}
+
+      if (simulated.length === 0) {
+        // Mock estático básico
+        simulated = [
+          {
+            _id: "ORD-928374",
+            createdAt: new Date().toISOString(),
+            status: "PAGO",
+            referredBy: "PART-301",
+            total: 350.00,
+            clientData: { name: "Marcos Pinheiro", email: "marcos@gmail.com", cpf: "123.456.789-01", phone: "(54) 99122-3344" },
+            items: [{ name: "Fondue Premium", qty: 1, price: 350.00, provider: "PART-301" }]
+          },
+          {
+            _id: "ORD-182374",
+            createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 min atrás
+            status: "AGUARDANDO_PAGAMENTO",
+            referredBy: "PART-201",
+            total: 680.00,
+            clientData: { name: "Bruna Albuquerque", email: "bruna@resort.com", cpf: "987.654.321-99", phone: "(11) 98888-7766" },
+            items: [{ name: "Suíte Alpina Luxo", qty: 1, price: 680.00, provider: "PART-201" }]
+          },
+          {
+            _id: "ORD-102938",
+            createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(), // 2 horas atrás
+            status: "PAGO",
+            referredBy: "PART-101",
+            total: 338.00,
+            clientData: { name: "Roberto Silveira", email: "roberto@yahoo.com", cpf: "555.666.777-88", phone: "(21) 97777-6655" },
+            items: [{ name: "Snowland Passaporte Adulto", qty: 2, price: 169.00, provider: "PART-101" }]
+          }
+        ];
+      }
+
+      ordersList = simulated;
+      renderOrders();
+    }
+
+    // Renderizar Pedidos na Tabela e atualiza KPIs
+    function renderOrders() {
+      const tbody = document.getElementById('orders-table-body');
+      tbody.innerHTML = '';
+
+      const query = document.getElementById('search-text').value.toLowerCase();
+      const partner = document.getElementById('filter-partner').value;
+      const status = document.getElementById('filter-status').value;
+
+      let filtered = ordersList.filter(o => {
+        // Busca textual
+        const nameMatch = o.clientData?.name?.toLowerCase().includes(query) || false;
+        const idMatch = o._id?.toLowerCase().includes(query) || false;
+        const itemMatch = o.items?.some(i => i.name?.toLowerCase().includes(query)) || false;
+        const textOk = !query || nameMatch || idMatch || itemMatch;
+
+        // Filtro parceiro
+        const partnerOk = partner === 'all' || o.referredBy === partner || o.items?.some(i => i.provider === partner);
+
+        // Filtro status
+        const statusOk = status === 'all' || o.status === status;
+
+        return textOk && partnerOk && statusOk;
+      });
+
+      // Se vazio
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">Nenhuma transação encontrada para os filtros ativos.</td></tr>`;
+        updateKPIs(filtered);
+        return;
+      }
+
+      // Preenche tabela
+      filtered.forEach(o => {
+        // Formata Data
+        const dateObj = new Date(o.createdAt);
+        const dateStr = dateObj.toLocaleDateString('pt-BR') + ' ' + dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        // Identifica canal de origem
+        const partnerObj = partnerMap[o.referredBy];
+        const sourceLabel = partnerObj ? partnerObj.tradeName : (o.referredBy || 'Direto B2C');
+        const sourceClass = o.referredBy ? 'source-widget' : 'source-b2c';
+        const sourceIcon = o.referredBy ? 'layout' : 'shopping-bag';
+
+        // Split cálculos
+        const commPercent = partnerObj ? (partnerObj.commission !== undefined ? partnerObj.commission : 15) : 15;
+        const commValue = o.total * (commPercent / 100);
+        const repasseValue = o.total - commValue;
+
+        // Status Badge Style
+        let statusClass = 'status-lock';
+        let statusText = o.status;
+        if (o.status === 'PAGO') {
+          statusClass = 'status-confirmed';
+          statusText = 'Pago';
+        } else if (o.status === 'AGUARDANDO_PAGAMENTO') {
+          statusClass = 'status-pending';
+          statusText = 'Pendente';
+        } else if (o.status === 'ERRO_EMISSAO') {
+          statusClass = 'status-cancelled';
+          statusText = 'Erro Emissão';
+        }
+
+        // Itens desc
+        const itemObj = o.items?.[0] || { name: 'Item', qty: 1 };
+        const itemDesc = `${itemObj.name} (${itemObj.qty}x)`;
+
+        // Botão de simular webhook
+        let webhookBtn = '-';
+        if (o.status === 'AGUARDANDO_PAGAMENTO') {
+          webhookBtn = `
+            <button class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem; background: var(--accent-green);" onclick="simulateWebhook('${o._id}')">
+              <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i> Pagar
+            </button>
+          `;
+        }
+
+        tbody.innerHTML += `
+          <tr style="cursor: pointer;" onclick="viewDetails('${o._id}')">
+            <td>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+            </td>
+            <td style="font-size: 0.8rem; white-space: nowrap;">${dateStr}</td>
+            <td>
+              <span class="split-badge ${sourceClass}">
+                <i data-lucide="${sourceIcon}" style="width: 12px; height: 12px;"></i> ${sourceLabel}
+              </span>
+            </td>
+            <td>
+              <strong>${o.clientData?.name || 'Cliente'}</strong>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">${o.clientData?.cpf || ''}</div>
+            </td>
+            <td>
+              <div style="font-size: 0.85rem; font-weight: 500;">${itemDesc}</div>
+            </td>
+            <td style="font-weight: 700;">R$ ${parseFloat(o.total).toFixed(2).replace('.', ',')}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span class="split-badge split-sentinel">Plat: R$ ${commValue.toFixed(2).replace('.', ',')} (${commPercent}%)</span>
+                <span class="split-badge split-partner">Parc: R$ ${repasseValue.toFixed(2).replace('.', ',')}</span>
+              </div>
+            </td>
+            <td onclick="event.stopPropagation()">
+              ${webhookBtn}
+            </td>
+          </tr>
+        `;
+      });
+
+      updateKPIs(filtered);
+      lucide.createIcons();
+    }
+
+    // Atualizar os Cards de KPI
+    function updateKPIs(list) {
+      let gross = 0;
+      let comm = 0;
+      let repasse = 0;
+
+      // Considera apenas pedidos pagos para faturamento
+      const paidOrders = list.filter(o => o.status === 'PAGO');
+
+      paidOrders.forEach(o => {
+        const partnerObj = partnerMap[o.referredBy];
+        const commPercent = partnerObj ? (partnerObj.commission !== undefined ? partnerObj.commission : 15) : 15;
+        const commVal = o.total * (commPercent / 100);
+
+        gross += o.total;
+        comm += commVal;
+        repasse += (o.total - commVal);
+      });
+
+      document.getElementById('kpi-gross').innerText = 'R$ ' + gross.toFixed(2).replace('.', ',');
+      document.getElementById('kpi-commission').innerText = 'R$ ' + comm.toFixed(2).replace('.', ',');
+      document.getElementById('kpi-repasse').innerText = 'R$ ' + repasse.toFixed(2).replace('.', ',');
+      document.getElementById('kpi-count').innerText = list.length;
+    }
+
+    // Aplicar filtros reativamente
+    function applyFilters() {
+      renderOrders();
+    }
+
+    // Simular Webhook de Pagamento
+    async function simulateWebhook(orderId) {
+      try {
+        const res = await fetch(getApiUrl('/webhooks/pagamento'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('PIX Pago com sucesso! Webhook do Mercado Pago simulado.');
+          loadOrders();
+        } else {
+          alert('Erro ao pagar: ' + data.error);
+        }
+      } catch (e) {
+        // Fallback local se estiver offline
+        const idx = ordersList.findIndex(o => o._id === orderId);
+        if (idx !== -1) {
+          ordersList[idx].status = 'PAGO';
+          
+          // Adiciona também na localStorage de reservas se existir para sincronizar
+          try {
+            const stored = localStorage.getItem('sentinelk_reservations');
+            if (stored) {
+              const resList = JSON.parse(stored);
+              const o = ordersList[idx];
+              const rIdx = resList.findIndex(r => r.id === o._id || r.code === `SNT-${o._id.slice(-5)}`);
+              if (rIdx !== -1) {
+                resList[rIdx].status = 'Check-in Realizado';
+              } else {
+                resList.push({
+                  id: o._id,
+                  partnerId: o.referredBy || 'PART-301',
+                  status: 'Aguardando Cliente',
+                  time: '20:00',
+                  code: `SNT-${o._id.slice(-5)}`,
+                  name: o.clientData.name,
+                  productName: o.items[0].name,
+                  qty: o.items[0].qty,
+                  price: o.items[0].price,
+                  date: o.createdAt.split('T')[0]
+                });
+              }
+              localStorage.setItem('sentinelk_reservations', JSON.stringify(resList));
+            }
+          } catch(err) {}
+
+          alert('PIX Pago com sucesso (Simulado Localmente)!');
+          renderOrders();
+        }
+      }
+    }
+
+    // Visualizar detalhes do pedido
+    function viewDetails(orderId) {
+      const order = ordersList.find(o => o._id === orderId);
+      if (!order) return;
+
+      const partnerObj = partnerMap[order.referredBy];
+      const name = partnerObj ? partnerObj.companyName : (order.referredBy || 'Direto B2C');
+      const commPercent = partnerObj ? (partnerObj.commission !== undefined ? partnerObj.commission : 15) : 15;
+
+      const content = document.getElementById('modal-body-content');
+      content.innerHTML = `
+        <p><strong>ID do Pedido:</strong> <span style="font-family: monospace; color: var(--accent-purple);">${order._id}</span></p>
+        <p><strong>Status:</strong> ${order.status}</p>
+        <p><strong>Data/Hora de Criação:</strong> ${new Date(order.createdAt).toLocaleString('pt-BR')}</p>
+        <p><strong>Origem da Venda:</strong> ${name} (Token: ${order.referredBy || 'Nenhum'})</p>
+        <div style="border-top: 1px solid var(--glass-border); margin: 8px 0;"></div>
+        <p><strong>Cliente:</strong> ${order.clientData?.name}</p>
+        <p><strong>E-mail:</strong> ${order.clientData?.email}</p>
+        <p><strong>CPF:</strong> ${order.clientData?.cpf}</p>
+        <p><strong>Celular:</strong> ${order.clientData?.phone || 'Não informado'}</p>
+        <div style="border-top: 1px solid var(--glass-border); margin: 8px 0;"></div>
+        <p><strong>Itens da Compra:</strong></p>
+        ${order.items.map(i => `<p style="padding-left: 12px; color: var(--text-muted); font-size: 0.85rem;">- ${i.name} (Qtd: ${i.qty} x R$ ${parseFloat(i.price).toFixed(2)})</p>`).join('')}
+        <p style="margin-top: 8px;"><strong>Valor Total:</strong> R$ ${parseFloat(order.total).toFixed(2).replace('.', ',')}</p>
+        <p><strong>Comissão Split (${commPercent}%):</strong> R$ ${(order.total * (commPercent / 100)).toFixed(2).replace('.', ',')}</p>
+      `;
+
+      document.getElementById('details-modal').style.display = 'flex';
+    }
+
+    function closeDetailsModal() {
+      document.getElementById('details-modal').style.display = 'none';
+    }
+
+    // Exportar Relatório em CSV simulado
+    function exportCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "ID Pedido,Data/Hora,Status,Parceiro,Cliente,CPF,Total,Comissao,Repasse\r\n";
+      
+      ordersList.forEach(o => {
+        const partnerObj = partnerMap[o.referredBy];
+        const pName = partnerObj ? partnerObj.tradeName : (o.referredBy || 'B2C');
+        const commPercent = partnerObj ? (partnerObj.commission !== undefined ? partnerObj.commission : 15) : 15;
+        const commVal = o.total * (commPercent / 100);
+        const repasse = o.total - commVal;
+        
+        csvContent += `${o._id},${new Date(o.createdAt).toLocaleString('pt-BR')},${o.status},${pName},${o.clientData?.name},${o.clientData?.cpf},${o.total},${commVal},${repasse}\r\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `relatorio_comissoes_sentinelk_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Inicialização
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPartnersMap();
+      loadOrders();
+      
+      // Carrega tema
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+    });
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light-theme');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      
+      document.getElementById('theme-icon-light').style.display = isLight ? 'block' : 'none';
+      document.getElementById('theme-icon-dark').style.display = isLight ? 'none' : 'block';
+    }
+  </script>
+</body>
+</html>

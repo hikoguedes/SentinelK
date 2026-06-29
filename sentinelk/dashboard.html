@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - Dashboard Operacional</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .sentinel-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 0.6fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    @media (max-width: 1024px) {
+      .sentinel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Terminal Console simulation */
+    .terminal-console {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', Courier, monospace;
+      color: #38bdf8;
+      font-size: 0.8rem;
+      height: 300px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    }
+    .terminal-line {
+      margin: 0;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+    .terminal-info { color: #38bdf8; }
+    .terminal-success { color: #4ade80; }
+    .terminal-warn { color: #fbbf24; }
+    .terminal-error { color: #f87171; }
+
+    .sidebar-heading {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 16px 0 8px 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container animate-fade">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="../logo.png" alt="SentinelK Logo" style="height: 32px; width: auto; object-fit: contain;">
+          <span style="font-weight: 800; font-size: 1.3rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Admin</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Portal do Administrador</p>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px;">
+        <!-- CATEGORIA: GERAL -->
+        <div class="sidebar-heading" style="margin-top:0;" data-role="superadmin">Geral</div>
+        <div class="nav-item" data-role="superadmin" onclick="window.location.href='../partner/b2b.html'"><i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>Visão Geral (Admin)</div>
+
+        <!-- CATEGORIA: NÚCLEO SENTINELK -->
+        <div class="sidebar-heading" data-role="superadmin">Núcleo SentinelK</div>
+        <div class="nav-item active" id="nav-item-sentinelk-dash" data-role="superadmin" onclick="window.location.href='../sentinelk/dashboard.html'"><i data-lucide="activity" style="width: 18px; height: 18px;"></i>SentinelK Dashboard</div>
+        <div class="nav-item" id="nav-item-sentinelk-network" data-role="superadmin" onclick="window.location.href='../sentinelk/network.html'"><i data-lucide="network" style="width: 18px; height: 18px;"></i>Rede de Integrações</div>
+        <div class="nav-item" id="nav-item-sentinelk-onboarding" data-role="superadmin" onclick="window.location.href='../sentinelk/ai-onboarding.html'"><i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>Onboarding de IA</div>
+        <div class="nav-item" id="nav-item-sentinelk-recursos" data-role="superadmin" onclick="window.location.href='../sentinelk/recursos.html'"><i data-lucide="sliders" style="width: 18px; height: 18px;"></i>Parceiros e Recursos</div>
+
+        <!-- CATEGORIA: GESTÃO B2B -->
+        <div class="sidebar-heading" data-role="superadmin">Gestão B2B</div>
+        <div class="nav-item" id="nav-item-gerenciar-parceiros" data-role="superadmin" onclick="window.location.href='../partner/gerenciar-parceiros.html'"><i data-lucide="users" style="width: 18px; height: 18px;"></i>Gerenciar Parceiros</div>
+        <div class="nav-item" id="nav-item-cadastro-parceiro" data-role="superadmin" onclick="window.location.href='../partner/cadastro-parceiro.html'"><i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>Credenciar Parceiro</div>
+        <div class="nav-item" id="nav-item-monitor-vendas" data-role="superadmin" onclick="window.location.href='../partner/monitor-vendas.html'"><i data-lucide="bar-chart-3" style="width: 18px; height: 18px;"></i>Monitor de Vendas</div>
+
+        <!-- CATEGORIA: EXTRANET (PARCEIROS) -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Extranet (Visão Parceiro)</div>
+        <div class="nav-item" id="nav-item-resumo" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=resumo'"><i data-lucide="store" style="width: 18px; height: 18px;"></i>Painel Operacional</div>
+        <div class="nav-item" id="nav-item-produtos" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-setup.html'"><i data-lucide="package" style="width: 18px; height: 18px;"></i>Catálogo de Produtos</div>
+        <div class="nav-item" id="nav-item-calendario" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=calendario'"><i data-lucide="calendar" style="width: 18px; height: 18px;"></i>Estoque & Lotes</div>
+        <div class="nav-item" id="nav-item-validador" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=validador'"><i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>Validador de Voucher</div>
+        <div class="nav-item" id="nav-item-financeiro" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=financeiro'"><i data-lucide="wallet" style="width: 18px; height: 18px;"></i>Extrato Financeiro</div>
+        <div class="nav-item" id="nav-item-perfil" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=perfil'"><i data-lucide="user" style="width: 18px; height: 18px;"></i>Dados Cadastrais</div>
+
+        <!-- CATEGORIA: CANAIS B2C -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Canais B2C</div>
+        <div class="nav-item" onclick="window.open('../index.html', '_blank')"><i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>Marketplace B2C <i data-lucide="external-link" style="width: 12px; height: 12px; margin-left: auto;"></i></div>
+      </nav>
+      
+      <div style="margin-top: auto; padding: 16px; background: rgba(139, 92, 246, 0.05); border-radius: var(--border-radius-md); border: 1px solid rgba(139, 92, 246, 0.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Logado como:<br><strong id="session-username">Aguardando...</strong></p>
+        <button onclick="logoutSession()" style="width: 100%; padding: 6px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; border-style: solid;">
+          <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1>SentinelK Core Engine</h1>
+          <p class="subtitle" style="margin: 0;">Monitor de transações de baixa latência, gestão de soft locks de inventário e logs de conexões de APIs de parceiros.</p>
+        </div>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <!-- Active Engine Status Badge -->
+          <span class="status-badge status-confirmed pulse-green" style="font-size: 0.85rem; padding: 6px 14px; font-weight: 700; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <i data-lucide="cpu" style="width:14px; height:14px; vertical-align: middle;"></i> Motor SentinelK: ATIVO
+          </span>
+
+          <!-- Theme Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+            <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+            <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- System Integration Status and Stats -->
+      <div class="dashboard-grid">
+        <div class="glass-panel stat-card" style="display:flex; flex-direction:row; align-items:center; gap:16px;">
+          <div style="width:40px; height:40px; border-radius:8px; background: rgba(16, 185, 129, 0.1); display:flex; align-items:center; justify-content:center; color: var(--accent-green);">
+            <i data-lucide="database" style="width:24px; height:24px;"></i>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">Conexão Database</span>
+            <h3 style="margin:0; font-size: 1.15rem;" id="db-status-label">MongoDB (Fallback RAM ativo)</h3>
+            <p style="color: var(--accent-orange); font-size: 0.75rem; margin:0;" id="db-details-label">Resiliência híbrida habilitada</p>
+          </div>
+        </div>
+
+        <div class="glass-panel stat-card" style="display:flex; flex-direction:row; align-items:center; gap:16px;">
+          <div style="width:40px; height:40px; border-radius:8px; background: rgba(59, 130, 246, 0.1); display:flex; align-items:center; justify-content:center; color: var(--accent-blue);">
+            <i data-lucide="radio" style="width:24px; height:24px;"></i>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">Status PWI Gateway</span>
+            <h3 style="margin:0; font-size: 1.15rem;" id="gateway-status-label">Integrado (SandBox)</h3>
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin:0;">Latência aproximada: <strong id="gateway-latency">45ms</strong></p>
+          </div>
+        </div>
+
+        <div class="glass-panel stat-card" style="display:flex; flex-direction:row; align-items:center; gap:16px;">
+          <div style="width:40px; height:40px; border-radius:8px; background: rgba(139, 92, 246, 0.1); display:flex; align-items:center; justify-content:center; color: var(--accent-purple);">
+            <i data-lucide="timer" style="width:24px; height:24px;"></i>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">Soft Locks Físicos</span>
+            <h3 style="margin:0; font-size: 1.15rem;" id="locks-active-count">0 Bloqueios</h3>
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin:0;">Evitando overbooking no checkout</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout Details -->
+      <div class="sentinel-grid">
+        
+        <!-- Left: Soft Locks Operations Manager -->
+        <div class="glass-panel" style="padding: 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <h3 style="margin:0;"><i data-lucide="lock" style="width:18px; height:18px; color:var(--accent-orange); vertical-align:middle; margin-right:6px;"></i> Fila Operacional de Soft Locks</h3>
+            <button class="btn-secondary" style="font-size:0.8rem; padding: 6px 12px;" onclick="clearExpiredLocks()">Limpar Expirados</button>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Reservas temporárias de estoque criadas antes do pagamento PIX. Expiração padrão: 10 Minutos.</p>
+
+          <table class="table-dark">
+            <thead>
+              <tr>
+                <th>Lock ID</th>
+                <th>Parceiro</th>
+                <th>Produto</th>
+                <th>Qtd</th>
+                <th>Data Uso</th>
+                <th>Expiração</th>
+                <th style="text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="locks-table-body">
+              <!-- Preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Right: Server Controls and Simulators -->
+        <div style="display:flex; flex-direction:column; gap:24px;">
+          
+          <!-- Failures and Delay simulator card -->
+          <div class="glass-panel" style="padding: 24px;">
+            <h3><i data-lucide="sliders" style="color: var(--accent-purple); width:18px; height:18px; vertical-align:middle; margin-right:6px;"></i> Simulação de Integridade</h3>
+            <p class="subtitle" style="font-size:0.85rem; margin-bottom: 20px;">Simule falhas de rede nas APIs dos parceiros para validar a resiliência do SentinelK.</p>
+
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <label class="checkbox-group" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 8px;">
+                <input type="checkbox" id="sim-fail-pwi" onchange="togglePwiFailure()" style="width:18px; height:18px; accent-color: var(--accent-purple);">
+                <div>
+                  <span style="font-size:0.85rem; font-weight:600; display:block;">Forçar Falha na PWI</span>
+                  <span style="font-size:0.7rem; color:var(--text-muted);">Erro 503 Service Unavailable no Soft Lock</span>
+                </div>
+              </label>
+
+              <div style="background: var(--input-bg); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                  <span>Latência do Checkout</span>
+                  <strong style="color: var(--accent-blue);" id="latency-label">45ms</strong>
+                </div>
+                <input type="range" id="sim-latency-slider" min="45" max="3000" step="50" value="45" oninput="updateLatencySim(this.value)" style="width: 100%; accent-color: var(--accent-blue); margin-top: 8px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions Simulator -->
+          <div class="glass-panel" style="padding: 24px;">
+            <h3><i data-lucide="zap" style="color: var(--accent-orange); width: 18px; height: 18px; vertical-align:middle; margin-right:6px;"></i> Ações de Teste</h3>
+            <p class="subtitle" style="font-size:0.85rem; margin-bottom: 16px;">Gere eventos operacionais artificiais.</p>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn-secondary" style="width: 100%; font-size:0.85rem;" onclick="generateMockLock()">
+                <i data-lucide="plus-circle" style="width:14px; height:14px;"></i> Gerar Lock de Simulação
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Live Terminal Console Log -->
+      <div class="glass-panel" style="padding: 24px; margin-top: 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <h3 style="margin:0;"><i data-lucide="terminal" style="width:18px; height:18px; color:var(--accent-green); vertical-align:middle; margin-right:6px;"></i> Console de Logs de Integração SentinelK</h3>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-family: monospace;">Acompanhamento em tempo real</span>
+        </div>
+        <div class="terminal-console" id="terminal-console">
+          <!-- Logs renderizados via JS -->
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+
+    function getApiUrl(path) {
+      const loc = window.location;
+      // Se estiver acessando via sub-caminho /admin (Proxy do site principal)
+      if (loc.pathname.startsWith('/admin')) {
+        return '/admin/api' + path;
+      }
+      // Se acessar direto via portas no ambiente de dev ou direto na EC2
+      return `${loc.protocol}//${loc.hostname}:3333/api${path}`;
+    }
+
+    // State management
+    function getSoftLocks() {
+      let locks = localStorage.getItem('sentinelk_softlocks');
+      if (!locks) {
+        // Initial mock softlocks
+        const defaultLocks = [
+          { id: "LOCK-4412A", partnerId: "PART-101", partnerName: "Snowland Park", productId: "PROD-101", productName: "Snowland Passaporte", qty: 2, date: "2026-05-25", expiresAt: Date.now() + 340000, status: "PENDING_PAYMENT" },
+          { id: "LOCK-7890B", partnerId: "PART-301", partnerName: "Restaurante Alpino", productId: "PROD-301", productName: "Fondue Premium", qty: 1, date: "2026-05-24", expiresAt: Date.now() + 560000, status: "PENDING_PAYMENT" }
+        ];
+        localStorage.setItem('sentinelk_softlocks', JSON.stringify(defaultLocks));
+        return defaultLocks;
+      }
+      return JSON.parse(locks);
+    }
+
+    function saveSoftLocks(list) {
+      localStorage.setItem('sentinelk_softlocks', JSON.stringify(list));
+      document.getElementById('locks-active-count').innerText = `${list.filter(l => l.status === 'PENDING_PAYMENT').length} Bloqueios`;
+    }
+
+    function getReservations() {
+      let list = localStorage.getItem('sentinelk_reservations');
+      if (!list) return [];
+      return JSON.parse(list);
+    }
+
+    function saveReservations(list) {
+      localStorage.setItem('sentinelk_reservations', JSON.stringify(list));
+    }
+
+    // Console logs function
+    function addLog(text, type = 'info') {
+      const consoleEl = document.getElementById('terminal-console');
+      if (!consoleEl) return;
+
+      const dateStr = new Date().toLocaleTimeString();
+      let cssClass = 'terminal-info';
+      if (type === 'success') cssClass = 'terminal-success';
+      if (type === 'warn') cssClass = 'terminal-warn';
+      if (type === 'error') cssClass = 'terminal-error';
+
+      const line = document.createElement('p');
+      line.className = `terminal-line ${cssClass}`;
+      line.innerHTML = `[${dateStr}] ${text}`;
+      consoleEl.appendChild(line);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+
+      // Keep only last 100 lines
+      if (consoleEl.children.length > 100) {
+        consoleEl.removeChild(consoleEl.firstChild);
+      }
+    }
+
+    function renderLocksTable() {
+      const locks = getSoftLocks();
+      const tbody = document.getElementById('locks-table-body');
+      tbody.innerHTML = "";
+
+      const pendingLocks = locks.filter(l => l.status === 'PENDING_PAYMENT');
+
+      if (pendingLocks.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">
+              Nenhum soft lock ativo na fila.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      pendingLocks.forEach(lock => {
+        const remainingMs = lock.expiresAt - Date.now();
+        let remainingStr = "Expirado";
+        let displayClass = 'color: var(--accent-orange);';
+
+        if (remainingMs > 0) {
+          const mins = Math.floor(remainingMs / 60000);
+          const secs = Math.floor((remainingMs % 60000) / 1000);
+          remainingStr = `${mins}m ${secs}s`;
+          displayClass = 'color: var(--text-main); font-weight:600;';
+        }
+
+        tbody.innerHTML += `
+          <tr>
+            <td style="font-family: monospace; font-weight:700; color: var(--accent-purple);">${lock.id}</td>
+            <td>${lock.partnerName}</td>
+            <td>${lock.productName}</td>
+            <td>${lock.qty}</td>
+            <td style="font-size:0.85rem;">${lock.date.split('-').reverse().join('/')}</td>
+            <td style="${displayClass}">${remainingStr}</td>
+            <td style="text-align: right;">
+              <button class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; background: var(--accent-green); margin-right: 6px;" onclick="manuallyCommitLock('${lock.id}')">
+                <i data-lucide="check" style="width:12px; height:12px;"></i> Forçar Confirmação
+              </button>
+              <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border-color: rgba(239, 68, 68, 0.2); color: #f87171;" onclick="expireLock('${lock.id}')">
+                <i data-lucide="x" style="width:12px; height:12px;"></i> Expirar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    // Lock Actions
+    function expireLock(lockId) {
+      let locks = getSoftLocks();
+      const idx = locks.findIndex(l => l.id === lockId);
+      if (idx !== -1) {
+        locks[idx].status = 'EXPIRED';
+        saveSoftLocks(locks);
+        addLog(`[SentinelK] Soft Lock ${lockId} expirado manualmente. Estoque devolvido ao parceiro.`, 'warn');
+        renderLocksTable();
+      }
+    }
+
+    function clearExpiredLocks() {
+      let locks = getSoftLocks();
+      const initialCount = locks.length;
+      locks = locks.filter(l => l.status === 'PENDING_PAYMENT' && l.expiresAt > Date.now());
+      saveSoftLocks(locks);
+      addLog(`[SentinelK] Limpeza operacional realizada. Locks expirados deletados.`, 'info');
+      renderLocksTable();
+    }
+
+    function manuallyCommitLock(lockId) {
+      let locks = getSoftLocks();
+      const lock = locks.find(l => l.id === lockId);
+      if (!lock) return;
+
+      // Create confirmed reservation
+      let reservations = getReservations();
+      const newRes = {
+        id: "TKT-" + Math.floor(10000 + Math.random() * 90000),
+        partnerId: lock.partnerId,
+        status: "Aguardando Cliente",
+        time: new Date().toLocaleTimeString().slice(0, 5),
+        code: "SNT-" + lockId.split('-')[1],
+        name: "Simulador Admin",
+        productName: lock.productName,
+        qty: lock.qty,
+        price: 350, // default simulation price
+        date: lock.date
+      };
+
+      reservations.push(newRes);
+      saveReservations(reservations);
+
+      // Mark lock as committed
+      lock.status = 'COMMITTED';
+      saveSoftLocks(locks);
+
+      addLog(`[Webhook PIX] Simulação de Pagamento confirmada! Emitindo ingresso no parceiro ${lock.partnerName}.`, 'success');
+      addLog(`[SentinelK] COMMIT realizado com sucesso para o Lock ${lockId}. Voucher gerado: ${newRes.code}`, 'success');
+
+      renderLocksTable();
+    }
+
+    function generateMockLock() {
+      const id = "LOCK-" + Math.floor(10000 + Math.random() * 90000).toString(16).toUpperCase();
+      const partners = [
+        { id: "PART-101", name: "Snowland Park", prod: "Snowland Passaporte" },
+        { id: "PART-201", name: "Resort Alpino", prod: "Suíte Alpina Luxo" },
+        { id: "PART-301", name: "Restaurante Alpino", prod: "Fondue Premium" }
+      ];
+      const selected = partners[Math.floor(Math.random() * partners.length)];
+      
+      let locks = getSoftLocks();
+      locks.push({
+        id: id,
+        partnerId: selected.id,
+        partnerName: selected.name,
+        productId: "PROD-" + selected.id.split('-')[1],
+        productName: selected.prod,
+        qty: Math.floor(1 + Math.random() * 4),
+        date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+        expiresAt: Date.now() + 600000,
+        status: "PENDING_PAYMENT"
+      });
+
+      saveSoftLocks(locks);
+      addLog(`[SentinelK] Novo Soft Lock registrado: ${id} para ${selected.name} (${selected.prod})`, 'info');
+      renderLocksTable();
+    }
+
+    // Failures and Latency configuration
+    function togglePwiFailure() {
+      const failed = document.getElementById('sim-fail-pwi').checked;
+      localStorage.setItem('sentinelk_sim_fail_pwi', failed ? 'true' : 'false');
+      
+      if (failed) {
+        addLog(`[Simulador] ERRO CRÍTICO ativado no gateway PWI. Soft locks retornarão erro 503.`, 'error');
+        document.getElementById('gateway-status-label').innerText = "INDISPONÍVEL (Erro 503)";
+        document.getElementById('gateway-status-label').style.color = "var(--accent-orange)";
+      } else {
+        addLog(`[Simulador] Restabelecida conexão com o gateway PWI. Operação normalizada.`, 'success');
+        document.getElementById('gateway-status-label').innerText = "Integrado (SandBox)";
+        document.getElementById('gateway-status-label').style.color = "var(--text-main)";
+      }
+    }
+
+    function updateLatencySim(val) {
+      document.getElementById('latency-label').innerText = val + "ms";
+      document.getElementById('gateway-latency').innerText = val + "ms";
+      localStorage.setItem('sentinelk_sim_latency', val);
+      addLog(`[Simulador] Latência do barramento de comunicação alterada para ${val}ms.`, 'info');
+    }
+
+    // Timer check for expiring locks countdown
+    function startTimerLoop() {
+      setInterval(() => {
+        renderLocksTable();
+      }, 1000);
+    }
+
+    // Check DB status simulation (checks if express server might be running)
+    function checkBackendConnection() {
+      fetch(getApiUrl("/pwi/produtos"))
+        .then(res => {
+          document.getElementById('db-status-label').innerText = "MongoDB (Conectado)";
+          document.getElementById('db-details-label').innerText = "Backend Express Online";
+          document.getElementById('db-details-label').style.color = "var(--accent-green)";
+          addLog(`[SentinelK] Integração Express de produção detectada localmente na porta 3000.`, 'success');
+        })
+        .catch(err => {
+          document.getElementById('db-status-label').innerText = "RAM Database (Offline)";
+          document.getElementById('db-details-label').innerText = "Rodando em modo Sandbox Autônomo";
+          document.getElementById('db-details-label').style.color = "var(--text-muted)";
+          addLog(`[SentinelK] Rodando em modo Sandbox local isolado (usando localStorage e RAM fallback).`, 'warn');
+        });
+    }
+
+    // Theme selector
+    function initTheme() {
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      } else {
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('light-theme')) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      
+      // Load initial simulator states from localStorage if set
+      const simFail = localStorage.getItem('sentinelk_sim_fail_pwi') === 'true';
+      document.getElementById('sim-fail-pwi').checked = simFail;
+      
+      const simLatency = localStorage.getItem('sentinelk_sim_latency') || "45";
+      document.getElementById('sim-latency-slider').value = simLatency;
+      document.getElementById('latency-label').innerText = simLatency + "ms";
+      document.getElementById('gateway-latency').innerText = simLatency + "ms";
+
+      addLog(`[SentinelK] Inicializando motor de transações...`, 'info');
+      addLog(`[SentinelK] Verificando integridade dos drivers de terceiros...`, 'info');
+      
+      if (simFail) {
+        document.getElementById('gateway-status-label').innerText = "INDISPONÍVEL (Erro 503)";
+        document.getElementById('gateway-status-label').style.color = "var(--accent-orange)";
+        addLog(`[SentinelK] Driver PWI configurado com simulação de erro persistente.`, 'error');
+      } else {
+        addLog(`[SentinelK] Driver PWI carregado com sucesso. Comunicação iniciada.`, 'success');
+      }
+      
+      checkBackendConnection();
+      renderLocksTable();
+      startTimerLoop();
+    });
+  </script>
+</body>
+</html>

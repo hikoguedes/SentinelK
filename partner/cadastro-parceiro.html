@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - Cadastre seu Estabelecimento</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .register-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 40px;
+      max-width: 1100px;
+      margin: 40px auto;
+      align-items: flex-start;
+      padding: 0 20px;
+    }
+    @media (max-width: 900px) {
+      .register-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .benefits-panel {
+      padding: 32px;
+      position: sticky;
+      top: 40px;
+    }
+    
+    .benefit-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      align-items: flex-start;
+    }
+    
+    .benefit-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(139, 92, 246, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-purple);
+      flex-shrink: 0;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--glass-border);
+      background: var(--input-bg);
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+    
+    .wizard-step {
+      display: none;
+    }
+    .wizard-step.active {
+      display: block;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .checkbox-group input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--accent-purple);
+      cursor: pointer;
+    }
+    
+    /* Loader cep */
+    .cep-loader {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--accent-green);
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Minimal Header -->
+  <nav class="navbar animate-fade">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; color: white;">
+        <i data-lucide="building-2" style="width: 20px; height: 20px;"></i>
+      </div>
+      <span style="font-weight: 800; font-size: 1.4rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Network</span>
+    </div>
+    
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <a href="../index.html" class="nav-links" style="text-decoration: none; font-weight: 500; font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Voltar ao Portal
+      </a>
+      <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+        <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+        <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="register-layout animate-fade">
+    
+    <!-- Left Column: Registration Wizard -->
+    <div class="glass-panel" style="padding: 40px;" id="main-register-card">
+      <header style="margin-bottom: 32px;">
+        <h1 style="font-size: 2.2rem; margin-bottom: 8px;">Credencie seu Negócio</h1>
+        <p style="color: var(--text-muted); margin: 0; font-size: 0.95rem;">
+          Cadastre seu estabelecimento local e comece a vender no marketplace do turismo integrado.
+        </p>
+      </header>
+
+      <!-- Step Stepper -->
+      <div class="step-indicator">
+        <div class="step active" id="step-1-indicator">1</div>
+        <div class="step" id="step-2-indicator">2</div>
+        <div class="step" id="step-3-indicator">3</div>
+      </div>
+
+      <!-- Step 1: Company Profile -->
+      <div class="wizard-step active" id="step-1">
+        <h3 style="margin-bottom: 20px; color: var(--accent-purple); display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="briefcase"></i> Passo 1: Informações do Negócio
+        </h3>
+        
+        <div class="form-group">
+          <label for="reg-company-name">Razão Social (Nome Oficial)</label>
+          <input type="text" id="reg-company-name" placeholder="Ex: Restaurante Gramado Alpino Ltda">
+        </div>
+
+        <div class="form-group">
+          <label for="reg-trade-name">Nome Fantasia (Nome do Estabelecimento)</label>
+          <input type="text" id="reg-trade-name" placeholder="Ex: Restaurante Alpino">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px;">
+          <div class="form-group">
+            <label for="reg-cnpj">CNPJ</label>
+            <input type="text" id="reg-cnpj" placeholder="00.000.000/0000-00" oninput="maskCNPJ(this)">
+          </div>
+          <div class="form-group">
+            <label for="reg-category">Categoria</label>
+            <select id="reg-category">
+              <option value="gastronomia">Gastronomia (Restaurantes / Bares)</option>
+              <option value="hotel">Hospedagem (Resorts / Hotéis / Pousadas)</option>
+              <option value="parque">Atração & Parque</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-phone">Telefone Comercial (WhatsApp)</label>
+          <input type="text" id="reg-phone" placeholder="(00) 00000-0000" oninput="maskPhone(this)">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 32px;">
+          <button class="btn-primary" onclick="nextStep(2)">Avançar <i data-lucide="arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Step 2: Location and Contact -->
+      <div class="wizard-step" id="step-2">
+        <h3 style="margin-bottom: 20px; color: var(--accent-purple); display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="map-pin"></i> Passo 2: Localização & Contato
+        </h3>
+
+        <div style="display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 20px;">
+          <div class="form-group">
+            <label for="reg-cep">CEP</label>
+            <input type="text" id="reg-cep" placeholder="00000-000" oninput="maskCEP(this); checkCEP(this)">
+            <div class="cep-loader" id="cep-loader">
+              <i data-lucide="loader" class="spin" style="width: 14px; height: 14px;"></i>
+              <span>Buscando endereço...</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">E-mail Administrativo</label>
+            <input type="email" id="reg-email" placeholder="admin@estabelecimento.com">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-address">Endereço Completo</label>
+          <input type="text" id="reg-address" placeholder="Ex: Av. Borges de Medeiros, 123">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px;">
+          <div class="form-group">
+            <label for="reg-city">Cidade</label>
+            <input type="text" id="reg-city" placeholder="Ex: Gramado">
+          </div>
+          <div class="form-group">
+            <label for="reg-state">Estado (UF)</label>
+            <input type="text" id="reg-state" placeholder="Ex: RS" maxlength="2">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 32px;">
+          <button class="btn-secondary" onclick="nextStep(1)"><i data-lucide="arrow-left"></i> Voltar</button>
+          <button class="btn-primary" onclick="nextStep(3)">Avançar <i data-lucide="arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Step 3: Split Payments / Terms -->
+      <div class="wizard-step" id="step-3">
+        <h3 style="margin-bottom: 20px; color: var(--accent-purple); display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="wallet"></i> Passo 3: Dados de Split & Recebimento
+        </h3>
+
+        <div class="form-group">
+          <label for="reg-bank">Instituição Bancária</label>
+          <select id="reg-bank">
+            <option>Itaú Unibanco</option>
+            <option>Banco do Brasil</option>
+            <option>Bradesco</option>
+            <option>Santander</option>
+            <option>Nubank</option>
+            <option>C6 Bank</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 20px;">
+          <div class="form-group">
+            <label for="reg-agency">Agência</label>
+            <input type="text" id="reg-agency" placeholder="Ex: 0001">
+          </div>
+          <div class="form-group">
+            <label for="reg-account">Conta Corrente (com dígito)</label>
+            <input type="text" id="reg-account" placeholder="Ex: 12345-6">
+          </div>
+        </div>
+
+        <div class="glass-panel" style="padding: 20px; background: rgba(139, 92, 246, 0.03); border-color: rgba(139, 92, 246, 0.15); margin-top: 24px;">
+          <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
+            O SentinelK utiliza a infraestrutura de Split do Mercado Pago. Ao vender no marketplace:
+            <br>📅 **Fluxo:** O pagamento é liquidado e dividido na hora da compra.
+            <br>💸 **Split:** **15%** é repassado automaticamente à plataforma SentinelK e **85%** é transferido direto para a sua conta informada.
+          </p>
+        </div>
+
+        <label class="checkbox-group">
+          <input type="checkbox" id="reg-accept-terms">
+          <span style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+            Concordo com os Termos de Split, a taxa de 15% de intermediação do SentinelK e dou fé que as informações inseridas são legítimas.
+          </span>
+        </label>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 32px;">
+          <button class="btn-secondary" onclick="nextStep(2)"><i data-lucide="arrow-left"></i> Voltar</button>
+          <button class="btn-primary" style="background: var(--accent-green); box-shadow: 0 4px 14px rgba(16,185,129,0.2);" onclick="finalizarCadastro()">
+            <i data-lucide="check-circle"></i> Concluir Cadastro
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Screen (Initial hidden) -->
+    <div class="glass-panel" style="padding: 48px; text-align: center; display: none; max-width: 600px; margin: 40px auto; grid-column: 1 / -1;" id="success-register-card">
+      <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 2px solid var(--accent-green); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+        <i data-lucide="sparkles" style="color: var(--accent-green); width: 36px; height: 36px;"></i>
+      </div>
+      <h2 style="font-size: 2.2rem; margin-bottom: 12px;">Parabéns! Credenciamento Concluído</h2>
+      <p style="color: var(--text-muted); font-size: 1.05rem; max-width: 480px; margin: 0 auto 32px; line-height: 1.5;">
+        Seu estabelecimento <strong id="success-partner-name" style="color: var(--text-main);"></strong> foi cadastrado na base do SentinelK.
+        <br>O ID do estabelecimento e a carteira de recebimentos de Split já estão configurados na rede.
+      </p>
+
+      <div class="glass-panel" style="padding: 24px; max-width: 420px; margin: 0 auto 32px; text-align: left; background: rgba(255,255,255,0.02);">
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem;">
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">ID de Integração:</span><strong id="success-partner-id" style="font-family: monospace;"></strong></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Status da Conta:</span><strong style="color: var(--accent-green);">Ativo & Liberado</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Comissão SentinelK:</span><strong>15% Split Real</strong></div>
+        </div>
+      </div>
+
+      <button class="btn-primary" style="font-size: 1.05rem; padding: 14px 28px;" onclick="redirectToSetup()">
+        <i data-lucide="plus-circle"></i> Cadastrar meu Primeiro Produto/Menu
+      </button>
+    </div>
+
+    <!-- Right Column: Marketing Benefits -->
+    <div class="glass-panel benefits-panel" id="benefits-card">
+      <h3 style="margin-bottom: 24px;">Vantagens da Integração</h3>
+      
+      <div class="benefit-item">
+        <div class="benefit-icon">
+          <i data-lucide="globe" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: bold; margin-bottom: 4px;">Distribuição Automática</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+            Seu estabelecimento e menu serão distribuídos automaticamente para marketplaces e canais integrados.
+          </p>
+        </div>
+      </div>
+
+      <div class="benefit-item">
+        <div class="benefit-icon">
+          <i data-lucide="zap" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: bold; margin-bottom: 4px;">Precificação Dinâmica (RM)</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+            Utilize nosso motor de Revenue Management para flutuar preços e otimizar a receita de mesas ou diárias.
+          </p>
+        </div>
+      </div>
+
+      <div class="benefit-item">
+        <div class="benefit-icon">
+          <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: bold; margin-bottom: 4px;">Soft Lock de Segurança</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+            Evite overbooking. O SentinelK segura e bloqueia vagas por 10 minutos na emissão do PIX.
+          </p>
+        </div>
+      </div>
+
+      <div class="benefit-item">
+        <div class="benefit-icon">
+          <i data-lucide="percent" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: bold; margin-bottom: 4px;">Split Sem Complicações</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+            Chega de transferências manuais. O dinheiro da venda entra direto na sua conta do banco liquidado.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 1;
+    let registeredPartnerName = "";
+    let generatedPartnerId = "";
+
+    function nextStep(stepNum) {
+      // Validações básicas por passo
+      if (currentStep === 1 && stepNum === 2) {
+        const compName = document.getElementById('reg-company-name').value;
+        const tradeName = document.getElementById('reg-trade-name').value;
+        const cnpj = document.getElementById('reg-cnpj').value;
+        
+        if (!compName || !tradeName || !cnpj) {
+          alert("Por favor, preencha a Razão Social, Nome Fantasia e CNPJ.");
+          return;
+        }
+      }
+      
+      if (currentStep === 2 && stepNum === 3) {
+        const cep = document.getElementById('reg-cep').value;
+        const email = document.getElementById('reg-email').value;
+        const address = document.getElementById('reg-address').value;
+        
+        if (!cep || !email || !address) {
+          alert("Por favor, informe o CEP, o E-mail administrativo e o Endereço.");
+          return;
+        }
+      }
+
+      currentStep = stepNum;
+      showStep(stepNum);
+    }
+
+    function showStep(stepNum) {
+      document.querySelectorAll('.wizard-step').forEach(step => step.classList.remove('active'));
+      document.querySelectorAll('.step').forEach(indicator => indicator.classList.remove('active', 'completed'));
+      
+      document.getElementById('step-' + stepNum).classList.add('active');
+      
+      for(let i = 1; i <= 3; i++) {
+        const ind = document.getElementById('step-' + i + '-indicator');
+        if (i < stepNum) {
+          ind.classList.add('completed');
+        } else if (i === stepNum) {
+          ind.classList.add('active');
+        }
+      }
+      lucide.createIcons();
+    }
+
+    // CNPJ & CEP Masks
+    function maskCNPJ(i) {
+      let v = i.value.replace(/\D/g, "");
+      if (v.length > 14) v = v.substring(0, 14);
+      v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+      v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+      v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+      v = v.replace(/(\d{4})(\d)/, "$1-$2");
+      i.value = v;
+    }
+
+    function maskPhone(i) {
+      let v = i.value.replace(/\D/g, "");
+      if (v.length > 11) v = v.substring(0, 11);
+      v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+      v = v.replace(/(\d{5})(\d)/, "$1-$2");
+      i.value = v;
+    }
+
+    function maskCEP(i) {
+      let v = i.value.replace(/\D/g, "");
+      if (v.length > 8) v = v.substring(0, 8);
+      v = v.replace(/(\d{5})(\d)/, "$1-$2");
+      i.value = v;
+    }
+
+    // Auto CEP Autocomplete Simulator
+    function checkCEP(i) {
+      const v = i.value.replace(/\D/g, "");
+      const loader = document.getElementById('cep-loader');
+      if (v.length === 8) {
+        loader.style.display = 'flex';
+        
+        // Simula requisição rápida (ex: ViaCEP)
+        setTimeout(() => {
+          loader.style.display = 'none';
+          document.getElementById('reg-address').value = "Avenida das Hortênsias, 4350";
+          document.getElementById('reg-city').value = "Gramado";
+          document.getElementById('reg-state').value = "RS";
+          
+          // Toast de aviso
+          alert("📍 CEP Encontrado!\nEndereço preenchido de forma automática para Gramado/RS.");
+        }, 1200);
+      }
+    }
+
+    // Shared DB utilities for mock persistence
+    function getEstablishments() {
+      let list = localStorage.getItem('sentinelk_establishments');
+      if (!list) {
+        const defaultPartners = [
+          {
+            id: "PART-101",
+            companyName: "Snowland Park S/A",
+            tradeName: "Snowland Park",
+            cnpj: "12.345.678/0001-90",
+            category: "parque",
+            phone: "(54) 3295-7700",
+            cep: "95670-000",
+            email: "contato@snowland.com.br",
+            address: "RS-235, 9009",
+            city: "Gramado",
+            state: "RS",
+            bank: "Banco do Brasil",
+            agency: "0123",
+            account: "45678-9"
+          },
+          {
+            id: "PART-201",
+            companyName: "Alpino Hospedagens Ltda",
+            tradeName: "Resort Alpino",
+            cnpj: "98.765.432/0001-10",
+            category: "hotel",
+            phone: "(54) 3286-1122",
+            cep: "95670-000",
+            email: "reservas@resortalpino.com",
+            address: "Av. das Hortênsias, 5000",
+            city: "Gramado",
+            state: "RS",
+            bank: "Itaú Unibanco",
+            agency: "4321",
+            account: "98765-4"
+          },
+          {
+            id: "PART-301",
+            companyName: "Fondue Alpino Gastronomia Ltda",
+            tradeName: "Restaurante Alpino",
+            cnpj: "55.444.333/0001-22",
+            category: "gastronomia",
+            phone: "(54) 3286-9900",
+            cep: "95670-000",
+            email: "contato@restaurantealpino.com",
+            address: "Av. Borges de Medeiros, 2500",
+            city: "Gramado",
+            state: "RS",
+            bank: "Banco Santander",
+            agency: "9876",
+            account: "11223-4"
+          }
+        ];
+        localStorage.setItem('sentinelk_establishments', JSON.stringify(defaultPartners));
+        return defaultPartners;
+      }
+      return JSON.parse(list);
+    }
+
+    // Complete Registration Logic
+    function finalizarCadastro() {
+      const checked = document.getElementById('reg-accept-terms').checked;
+      if (!checked) {
+        alert("Você precisa concordar com os Termos de Split e Comissão para se credenciar!");
+        return;
+      }
+      
+      const compName = document.getElementById('reg-trade-name').value;
+      registeredPartnerName = compName;
+      generatedPartnerId = 'PART-' + Math.floor(100000 + Math.random() * 900000);
+
+      // Save partner to local storage
+      const establishments = getEstablishments();
+      const newPartner = {
+        id: generatedPartnerId,
+        companyName: document.getElementById('reg-company-name').value,
+        tradeName: registeredPartnerName,
+        cnpj: document.getElementById('reg-cnpj').value,
+        category: document.getElementById('reg-category').value,
+        phone: document.getElementById('reg-phone').value,
+        cep: document.getElementById('reg-cep').value,
+        email: document.getElementById('reg-email').value,
+        address: document.getElementById('reg-address').value,
+        city: document.getElementById('reg-city').value,
+        state: document.getElementById('reg-state').value,
+        bank: document.getElementById('reg-bank').value,
+        agency: document.getElementById('reg-agency').value,
+        account: document.getElementById('reg-account').value
+      };
+      
+      establishments.push(newPartner);
+      localStorage.setItem('sentinelk_establishments', JSON.stringify(establishments));
+      localStorage.setItem('active_partner_id', generatedPartnerId);
+
+      // Simula animação e troca de telas
+      const btn = event.currentTarget;
+      btn.innerHTML = '<i data-lucide="loader" class="spin"></i> Gravando no Banco...';
+      btn.style.opacity = '0.75';
+      lucide.createIcons();
+
+      setTimeout(() => {
+        document.getElementById('main-register-card').style.display = 'none';
+        document.getElementById('benefits-card').style.display = 'none';
+        
+        document.getElementById('success-partner-name').innerText = registeredPartnerName;
+        document.getElementById('success-partner-id').innerText = generatedPartnerId;
+        
+        document.getElementById('success-register-card').style.display = 'block';
+        lucide.createIcons();
+      }, 1500);
+    }
+
+    function redirectToSetup() {
+      // Redireciona passando o nome do parceiro cadastrado via query parameter
+      window.location.href = `b2b-setup.html?partner=${encodeURIComponent(registeredPartnerName)}&id=${generatedPartnerId}`;
+    }
+
+    // Theme selector
+    function initTheme() {
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      } else {
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('light-theme')) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

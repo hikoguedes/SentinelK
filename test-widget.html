@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sandbox de Teste: Widget Low-Code SentinelK</title>
+  <style>
+    :root {
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #a78bfa, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    /* Sandbox Simulator Bar */
+    .sandbox-bar {
+      background: rgba(139, 92, 246, 0.05);
+      border: 1px dashed rgba(139, 92, 246, 0.3);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+
+    /* Site Demo Frame */
+    .hotel-site {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .hotel-hero {
+      background: linear-gradient(rgba(15, 23, 42, 0.6), #0f172a), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80');
+      background-size: cover;
+      background-position: center;
+      height: 240px;
+      padding: 40px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .hotel-name {
+      font-size: 2rem;
+      font-weight: 800;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .hotel-content {
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .hotel-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .widget-container-box {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      min-height: 400px;
+    }
+
+    /* Code Snippet Box */
+    .code-snippet {
+      background: #020617;
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sandbox de Integração do Widget JS</h1>
+      <p class="subtitle">Simulador de implantação B2B em sites de parceiros para splits automatizados.</p>
+    </header>
+
+    <!-- Sandbox controls -->
+    <div class="sandbox-bar">
+      <div>
+        <p style="font-weight: 700; margin-bottom: 4px;">Modo de Visualização Ativo:</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted);" id="current-mode-text">
+          Carregando...
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn" id="toggle-mode-btn">Alternar Modo de Exibição</button>
+        <button class="btn btn-outline" onclick="changeToken()">Alterar Token de Parceiro</button>
+      </div>
+    </div>
+
+    <!-- Simulated Hotel Website -->
+    <div class="hotel-site">
+      <div class="hotel-hero">
+        <h2 class="hotel-name" id="hotel-title">Hotel & Resort Alpino (Demo)</h2>
+      </div>
+
+      <div class="hotel-content">
+        <!-- Hotel Left Side Details -->
+        <div>
+          <h3 style="margin-bottom: 12px;">Bem-vindo ao Resort Alpino</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
+            Localizado no coração da Serra Gaúcha, nosso resort oferece uma experiência alpina clássica e acolhedora. Desfrute de acomodações premium com vista para o vale, adega subterrânea e piscina termal.
+          </p>
+
+          <h4 style="margin-bottom: 8px;">Dica de Integração B2B</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">
+            Este site simula o portal do hotel (Parceiro comercial). Utilizando o Widget JS SentinelK, o hotel vende diretamente em suas páginas e arrecada splits de comissão na hora!
+          </p>
+
+          <p style="font-size: 0.85rem; font-weight: bold;">Código colado no site do parceiro:</p>
+          <div class="code-snippet" id="code-snippet-box">
+            &lt;script src="http://52.45.110.163:8080/widget.js" data-token="PART-301"&gt;&lt;/script&gt;
+          </div>
+        </div>
+
+        <!-- Right Side: Target for Inline Widget -->
+        <div>
+          <h3 style="margin-bottom: 16px;" id="widget-section-title">Comprar Ingresso/Reserva</h3>
+          
+          <!-- Se este div existir, o widget.js renderizará aqui inline -->
+          <div id="sentinelk-widget-placeholder">
+            <!-- Renderizado dinamicamente via script script-tag -->
+          </div>
+          
+          <div id="floating-instructions" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 20px; border-radius: 12px; text-align: center;">
+            <p style="font-weight: bold; margin-bottom: 8px; color: var(--primary);">Modo Flutuante Ativo! 📣</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              O div de renderização inline <code style="color:white; background:rgba(255,255,255,0.05); padding:2px 4px; border-radius:4px;">#sentinelk-widget</code> foi removido desta coluna.
+            </p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+              Clique no botão flutuante **"Reservar Ingressos"** no canto inferior direito da tela para abrir o modal de checkout.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Inicializa configurações padrão na URL caso vazio
+    const urlParams = new URLSearchParams(window.location.search);
+    let mode = urlParams.get('mode') || 'inline';
+    let token = urlParams.get('token') || 'PART-301';
+
+    // Seletor de modo
+    const currentModeText = document.getElementById('current-mode-text');
+    const widgetPlaceholder = document.getElementById('sentinelk-widget-placeholder');
+    const floatingInstructions = document.getElementById('floating-instructions');
+    const widgetSectionTitle = document.getElementById('widget-section-title');
+    const hotelTitle = document.getElementById('hotel-title');
+
+    // Mapeamento visual de nomes baseados no Token
+    const partnerNames = {
+      'PART-101': 'Snowland Park S/A',
+      'PART-201': 'Resort Alpino',
+      'PART-301': 'Restaurante Alpino',
+      'PART-PLANNE': 'Farol API (Planne)'
+    };
+    
+    hotelTitle.innerText = partnerNames[token] ? `Site Oficial - ${partnerNames[token]}` : `Site Oficial - Parceiro ${token}`;
+
+    if (mode === 'inline') {
+      currentModeText.innerHTML = `<strong>Inline</strong> (Exibido diretamente na coluna lateral da página)`;
+      widgetPlaceholder.id = 'sentinelk-widget'; // Habilita o ID esperado pelo widget
+      floatingInstructions.style.display = 'none';
+      widgetSectionTitle.style.display = 'block';
+    } else {
+      currentModeText.innerHTML = `<strong>Flutuante</strong> (Botão de ação no canto inferior da tela abrindo modal)`;
+      widgetPlaceholder.style.display = 'none';
+      floatingInstructions.style.display = 'block';
+      widgetSectionTitle.style.display = 'none';
+    }
+
+    // Atualiza caixa de código copiável
+    const codeSnippetBox = document.getElementById('code-snippet-box');
+    const hostname = window.location.hostname || '52.45.110.163';
+    const port = window.location.port ? `:${window.location.port}` : ':8080';
+    codeSnippetBox.innerText = `<script src="http://${hostname}${port}/widget.js" data-token="${token}"><\/script>`;
+
+    // Alternar modo
+    document.getElementById('toggle-mode-btn').addEventListener('click', () => {
+      const nextMode = mode === 'inline' ? 'floating' : 'inline';
+      window.location.href = `?mode=${nextMode}&token=${token}`;
+    });
+
+    // Alterar Token
+    function changeToken() {
+      const newToken = prompt("Digite o Token do parceiro (ex: PART-101, PART-201, PART-301, PART-PLANNE):", token);
+      if (newToken) {
+        window.location.href = `?mode=${mode}&token=${newToken}`;
+      }
+    }
+
+    // Inserir dinamicamente a tag script com o token
+    const scriptEl = document.createElement('script');
+    scriptEl.src = `./widget.js`;
+    scriptEl.setAttribute('data-token', token);
+    document.body.appendChild(scriptEl);
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  park-db:
+    image: mysql:8.0
+    container_name: mock-park-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: park_erp
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  park-api:
+    build: .
+    container_name: mock-park-api
+    ports:
+      - "4000:4000"
+    environment:
+      DB_HOST: park-db
+      DB_USER: root
+      DB_PASS: rootpassword
+      DB_NAME: park_erp
+    depends_on:
+      - park-db
+    restart: unless-stopped

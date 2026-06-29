@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="../auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelK - Recursos do Parceiro</title>
+  <link rel="stylesheet" href="../index.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .resources-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 24px;
+    }
+    @media (max-width: 1024px) {
+      .resources-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(5px);
+      display: none; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-content {
+      background: var(--bg-dark); border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-lg); padding: 32px; width: 100%; max-width: 400px;
+    }
+    .sidebar-heading {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 16px 0 8px 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container animate-fade">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="../logo.png" alt="SentinelK Logo" style="height: 32px; width: auto; object-fit: contain;">
+          <span style="font-weight: 800; font-size: 1.3rem; font-family: var(--font-title); letter-spacing: -0.02em;">SentinelK Admin</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Portal do Administrador</p>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 4px;">
+        <!-- CATEGORIA: GERAL -->
+        <div class="sidebar-heading" style="margin-top:0;" data-role="superadmin">Geral</div>
+        <div class="nav-item" data-role="superadmin" onclick="window.location.href='../partner/b2b.html'"><i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>Visão Geral (Admin)</div>
+
+        <!-- CATEGORIA: NÚCLEO SENTINELK -->
+        <div class="sidebar-heading" data-role="superadmin">Núcleo SentinelK</div>
+        <div class="nav-item" id="nav-item-sentinelk-dash" data-role="superadmin" onclick="window.location.href='../sentinelk/dashboard.html'"><i data-lucide="activity" style="width: 18px; height: 18px;"></i>SentinelK Dashboard</div>
+        <div class="nav-item" id="nav-item-sentinelk-network" data-role="superadmin" onclick="window.location.href='../sentinelk/network.html'"><i data-lucide="network" style="width: 18px; height: 18px;"></i>Rede de Integrações</div>
+        <div class="nav-item" id="nav-item-sentinelk-onboarding" data-role="superadmin" onclick="window.location.href='../sentinelk/ai-onboarding.html'"><i data-lucide="brain-circuit" style="width: 18px; height: 18px;"></i>Onboarding de IA</div>
+        <div class="nav-item active" id="nav-item-sentinelk-recursos" data-role="superadmin" onclick="window.location.href='../sentinelk/recursos.html'"><i data-lucide="sliders" style="width: 18px; height: 18px;"></i>Parceiros e Recursos</div>
+
+        <!-- CATEGORIA: GESTÃO B2B -->
+        <div class="sidebar-heading" data-role="superadmin">Gestão B2B</div>
+        <div class="nav-item" id="nav-item-gerenciar-parceiros" data-role="superadmin" onclick="window.location.href='../partner/gerenciar-parceiros.html'"><i data-lucide="users" style="width: 18px; height: 18px;"></i>Gerenciar Parceiros</div>
+        <div class="nav-item" id="nav-item-cadastro-parceiro" data-role="superadmin" onclick="window.location.href='../partner/cadastro-parceiro.html'"><i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>Credenciar Parceiro</div>
+        <div class="nav-item" id="nav-item-monitor-vendas" data-role="superadmin" onclick="window.location.href='../partner/monitor-vendas.html'"><i data-lucide="bar-chart-3" style="width: 18px; height: 18px;"></i>Monitor de Vendas</div>
+
+        <!-- CATEGORIA: EXTRANET (PARCEIROS) -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Extranet (Visão Parceiro)</div>
+        <div class="nav-item" id="nav-item-resumo" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=resumo'"><i data-lucide="store" style="width: 18px; height: 18px;"></i>Painel Operacional</div>
+        <div class="nav-item" id="nav-item-produtos" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-setup.html'"><i data-lucide="package" style="width: 18px; height: 18px;"></i>Catálogo de Produtos</div>
+        <div class="nav-item" id="nav-item-calendario" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=calendario'"><i data-lucide="calendar" style="width: 18px; height: 18px;"></i>Estoque & Lotes</div>
+        <div class="nav-item" id="nav-item-validador" data-role="superadmin,partner_manager,reception" onclick="window.location.href='../partner/b2b-restaurante.html?tab=validador'"><i data-lucide="qr-code" style="width: 18px; height: 18px;"></i>Validador de Voucher</div>
+        <div class="nav-item" id="nav-item-financeiro" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=financeiro'"><i data-lucide="wallet" style="width: 18px; height: 18px;"></i>Extrato Financeiro</div>
+        <div class="nav-item" id="nav-item-perfil" data-role="superadmin,partner_manager" onclick="window.location.href='../partner/b2b-restaurante.html?tab=perfil'"><i data-lucide="user" style="width: 18px; height: 18px;"></i>Dados Cadastrais</div>
+
+        <!-- CATEGORIA: CANAIS B2C -->
+        <div class="sidebar-heading" data-role="superadmin,partner_manager,reception">Canais B2C</div>
+        <div class="nav-item" onclick="window.open('../index.html', '_blank')"><i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>Marketplace B2C <i data-lucide="external-link" style="width: 12px; height: 12px; margin-left: auto;"></i></div>
+      </nav>
+      
+      <div style="margin-top: auto; padding: 16px; background: rgba(139, 92, 246, 0.05); border-radius: var(--border-radius-md); border: 1px solid rgba(139, 92, 246, 0.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">Logado como:<br><strong id="session-username">Aguardando...</strong></p>
+        <button onclick="logoutSession()" style="width: 100%; padding: 6px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #f87171; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; border-style: solid;">
+          <i data-lucide="log-out" style="width:12px; height:12px;"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1>Recursos do Parceiro</h1>
+          <p class="subtitle" style="margin: 0;">Gerencie cotas físicas, regras de Revenue Management e verifique a disponibilidade de estoque.</p>
+        </div>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <label for="partner-picker" style="font-weight: 600; font-size: 0.90rem;">Parceiro Comercial:</label>
+          <select id="partner-picker" onchange="switchPartner(this.value)" style="background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; outline: none; cursor: pointer; color-scheme: dark;">
+            <!-- Preenchido via JS -->
+          </select>
+
+          <!-- Theme Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Tema">
+            <i data-lucide="sun" id="theme-icon-light" style="width: 18px; height: 18px; display: none;"></i>
+            <i data-lucide="moon" id="theme-icon-dark" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Active Partner Profile Summary Card -->
+      <div class="glass-panel" style="padding: 20px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 24px;">
+        <div id="partner-badge-icon" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+          🎡
+        </div>
+        <div style="flex: 1; min-width: 240px;">
+          <h2 style="margin: 0; font-size: 1.4rem;" id="partner-title">Carregando...</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin: 4px 0 0 0;" id="partner-details-line"></p>
+        </div>
+        <div style="display: flex; gap: 24px;">
+          <div style="text-align: center;">
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Status do Split</p>
+            <span class="status-badge status-confirmed" style="margin-top: 4px; display: inline-block;">Integrado (MP)</span>
+          </div>
+          <div style="text-align: center;">
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Taxa SentinelK</p>
+            <span class="status-badge" style="background: rgba(139, 92, 246, 0.15); color: #c4b5fd; margin-top: 4px; display: inline-block; font-weight: bold;" id="partner-commission-badge">15%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Columns Grid -->
+      <div class="resources-layout">
+        
+        <!-- Left Column: Interactive Resource Calendar (Lotes) -->
+        <div class="glass-panel" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin:0;"><i data-lucide="calendar" style="width:18px; height:18px; color:var(--accent-purple); vertical-align: middle; margin-right: 6px;"></i> Calendário de Disponibilidade</h3>
+            <span class="status-badge status-confirmed">Maio/Junho 2026</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 24px;">Clique em um dia para configurar preço, cota limite ou fechar vendas.</p>
+          
+          <div class="calendar-grid" id="calendar-grid-container" style="grid-template-columns: repeat(4, 1fr); gap: 10px;">
+            <!-- Preenchido via JS -->
+          </div>
+        </div>
+
+        <!-- Right Column: Revenue Management Rules & Recent Logs -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <!-- RM Dynamic pricing parameters slider simulation -->
+          <div class="glass-panel" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h3 style="margin: 0;"><i data-lucide="zap" style="color: var(--accent-orange); width: 18px; height: 18px; vertical-align: middle; margin-right: 6px;"></i> Motor de RM Dinâmico</h3>
+              <span class="status-badge status-confirmed" id="rm-engine-status">Automatizado</span>
+            </div>
+            <p class="subtitle" style="font-size: 0.85rem; margin-bottom: 20px;">Configure a distribuição dos lotes de precificação baseados na capacidade vendida.</p>
+
+            <!-- RM Sliders -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="background: var(--input-bg); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                  <span>Lote Promocional (Preço: 70%)</span>
+                  <strong style="color: var(--accent-green);" id="slider-promo-label">Até 30% da ocupação</strong>
+                </div>
+                <input type="range" id="rm-promo-slider" min="10" max="50" value="30" oninput="updateRMSliders()" style="width: 100%; accent-color: var(--accent-green); margin-top: 8px;">
+              </div>
+
+              <div style="background: var(--input-bg); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                  <span>Lote Standard (Preço: 100%)</span>
+                  <strong style="color: var(--accent-blue);" id="slider-standard-label">Até 75% da ocupação</strong>
+                </div>
+                <input type="range" id="rm-standard-slider" min="50" max="90" value="75" oninput="updateRMSliders()" style="width: 100%; accent-color: var(--accent-blue); margin-top: 8px;">
+              </div>
+
+              <div style="background: var(--input-bg); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                  <span>Lote Last Minute (Preço: 130%)</span>
+                  <strong style="color: var(--accent-purple);">Acima do Lote Standard</strong>
+                </div>
+              </div>
+            </div>
+            <button class="btn-primary" style="width: 100%; font-size: 0.85rem; padding: 10px; margin-top: 16px;" onclick="saveRMConfiguration()">
+              <i data-lucide="check"></i> Aplicar Regras de RM
+            </button>
+          </div>
+
+          <!-- Recent Reservations for this Partner -->
+          <div class="glass-panel" style="padding: 24px;">
+            <h3><i data-lucide="activity" style="width: 18px; height: 18px; color: var(--accent-blue); vertical-align: middle; margin-right: 6px;"></i> Reservas Recentes</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Vendas vinculadas a esta carteira de recebimentos.</p>
+            
+            <div style="max-height: 240px; overflow-y: auto;">
+              <table class="table-dark" style="font-size: 0.85rem; margin-top: 0;">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Voucher</th>
+                    <th>Comprador</th>
+                    <th>Uso</th>
+                    <th style="text-align: right;">Líquido</th>
+                  </tr>
+                </thead>
+                <tbody id="partner-reservations-list">
+                  <!-- Preenchido via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Edit day modal config -->
+  <div class="modal-overlay" id="editDayModal">
+    <div class="modal-content animate-fade">
+      <h2 style="margin-bottom: 8px;">Configurar Dia</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px;" id="modal-day-label">Dia 24 - Sexta</p>
+      
+      <input type="hidden" id="modal-day-index">
+
+      <div class="form-input-group">
+        <label for="input-day-price">Preço Unitário (R$)</label>
+        <input type="number" id="input-day-price" step="10">
+      </div>
+
+      <div class="form-input-group">
+        <label for="input-day-capacity" id="modal-capacity-label">Capacidade Máxima</label>
+        <input type="number" id="input-day-capacity" step="1">
+      </div>
+
+      <label class="checkbox-group" style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 24px;">
+        <input type="checkbox" id="input-day-closed" style="width:16px; height:16px; accent-color: var(--accent-purple);">
+        <span style="font-size: 0.9rem; color: var(--text-muted);">Bloquear vendas para este dia</span>
+      </label>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn-secondary" style="flex: 1;" onclick="closeEditDayModal()">Cancelar</button>
+        <button class="btn-primary" style="flex: 1; background: var(--accent-purple);" onclick="saveEditDayConfig()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mock local calendars for each partner id
+    let localCalendars = {};
+
+    function getEstablishments() {
+      let list = localStorage.getItem('sentinelk_establishments');
+      if (!list) {
+        const defaultPartners = [
+          { id: "PART-101", companyName: "Snowland Park S/A", tradeName: "Snowland Park", cnpj: "12.345.678/0001-90", category: "parque", phone: "(54) 3295-7700", cep: "95670-000", email: "contato@snowland.com.br", address: "RS-235, 9009", city: "Gramado", state: "RS", bank: "Banco do Brasil", agency: "0123", account: "45678-9", commission: 15, status: "active" },
+          { id: "PART-201", companyName: "Alpino Hospedagens Ltda", tradeName: "Resort Alpino", cnpj: "98.765.432/0001-10", category: "hotel", phone: "(54) 3286-1122", cep: "95670-000", email: "reservas@resortalpino.com", address: "Av. das Hortênsias, 5000", city: "Gramado", state: "RS", bank: "Itaú Unibanco", agency: "4321", account: "98765-4", commission: 15, status: "active" },
+          { id: "PART-301", companyName: "Fondue Alpino Gastronomia Ltda", tradeName: "Restaurante Alpino", cnpj: "55.444.333/0001-22", category: "gastronomia", phone: "(54) 3286-9900", cep: "95670-000", email: "contato@restaurantealpino.com", address: "Av. Borges de Medeiros, 2500", city: "Gramado", state: "RS", bank: "Banco Santander", agency: "9876", account: "11223-4", commission: 15, status: "active" }
+        ];
+        localStorage.setItem('sentinelk_establishments', JSON.stringify(defaultPartners));
+        return defaultPartners;
+      }
+      return JSON.parse(list);
+    }
+
+    function getReservations() {
+      let list = localStorage.getItem('sentinelk_reservations');
+      if (!list) {
+        const defaultReservations = [
+          { id: "TKT-30101", partnerId: "PART-301", status: "Check-in Realizado", time: "14:30", code: "SNT-77A9B", name: "João Silva", productName: "Fondue Premium", qty: 2, price: 350, date: "2026-05-24" },
+          { id: "TKT-30102", partnerId: "PART-301", status: "Aguardando Cliente", time: "16:45", code: "SNT-88B2C", name: "Maria Oliveira", productName: "Fondue Premium", qty: 4, price: 350, date: "2026-05-24" },
+          { id: "TKT-20101", partnerId: "PART-201", status: "Check-in Realizado", time: "12:00", code: "SNT-55C1A", name: "Carlos Souza", productName: "Suíte Alpina Luxo", qty: 2, price: 680, date: "2026-05-24" },
+          { id: "TKT-10101", partnerId: "PART-101", status: "Aguardando Cliente", time: "10:15", code: "SNT-11D5F", name: "Patricia Lima", productName: "Snowland Passaporte", qty: 3, price: 507, date: "2026-05-24" }
+        ];
+        localStorage.setItem('sentinelk_reservations', JSON.stringify(defaultReservations));
+        return defaultReservations;
+      }
+      return JSON.parse(list);
+    }
+
+    function initializePartnerCalendars() {
+      const stored = localStorage.getItem('sentinelk_partner_calendars');
+      if (stored) {
+        localCalendars = JSON.parse(stored);
+        return;
+      }
+
+      // Generate initial calendar arrays for 10 days for each partner category
+      const partners = getEstablishments();
+      partners.forEach(p => {
+        let basePrice = p.category === 'hotel' ? 600 : p.category === 'gastronomia' ? 300 : 150;
+        let baseCapacity = p.category === 'hotel' ? 12 : p.category === 'gastronomia' ? 40 : 120;
+        
+        let days = [];
+        for (let i = 0; i < 8; i++) {
+          days.push({
+            dayNum: 20 + i,
+            weekDay: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom', 'Seg'][i],
+            price: basePrice + (i % 2 === 0 ? 0 : 50),
+            capacity: baseCapacity,
+            sold: Math.floor(baseCapacity * (0.2 + (i * 0.1))),
+            locks: i === 4 ? 2 : 0,
+            closed: false
+          });
+        }
+        localCalendars[p.id] = days;
+      });
+      
+      localStorage.setItem('sentinelk_partner_calendars', JSON.stringify(localCalendars));
+    }
+
+    function savePartnerCalendars() {
+      localStorage.setItem('sentinelk_partner_calendars', JSON.stringify(localCalendars));
+    }
+
+    let activePartnerId = "";
+
+    function populatePartnerPicker() {
+      const partners = getEstablishments();
+      const picker = document.getElementById('partner-picker');
+      picker.innerHTML = "";
+      
+      partners.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.innerText = p.tradeName;
+        picker.appendChild(opt);
+      });
+
+      // Handle query param
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryId = urlParams.get('id');
+      
+      if (queryId && partners.find(p => p.id === queryId)) {
+        activePartnerId = queryId;
+      } else {
+        activePartnerId = localStorage.getItem('active_partner_id') || partners[0].id;
+      }
+      picker.value = activePartnerId;
+      switchPartner(activePartnerId);
+    }
+
+    function switchPartner(partnerId) {
+      activePartnerId = partnerId;
+      localStorage.setItem('active_partner_id', partnerId);
+      
+      const partners = getEstablishments();
+      const p = partners.find(e => e.id === partnerId);
+      if (!p) return;
+
+      // Update UI Header details
+      document.getElementById('partner-title').innerText = p.tradeName;
+      document.getElementById('partner-details-line').innerText = `${p.companyName} | CNPJ: ${p.cnpj} | Categoria: ${p.category.toUpperCase()}`;
+      document.getElementById('partner-commission-badge').innerText = (p.commission !== undefined ? p.commission : 15) + '%';
+      
+      // Update badge emoji
+      const badgeIcon = document.getElementById('partner-badge-icon');
+      if (p.category === 'hotel') badgeIcon.innerText = "🏨";
+      else if (p.category === 'gastronomia') badgeIcon.innerText = "🍷";
+      else badgeIcon.innerText = "🎡";
+
+      // Toggle capacity modal input text
+      const modalCap = document.getElementById('modal-capacity-label');
+      if (p.category === 'hotel') modalCap.innerText = "Capacidade (Quartos)";
+      else if (p.category === 'gastronomia') modalCap.innerText = "Capacidade (Mesas)";
+      else modalCap.innerText = "Capacidade (Ingressos/Vagas)";
+
+      // Handle RM Dyn range configs
+      const storedRm = localStorage.getItem(`sentinelk_rm_${p.id}`);
+      if (storedRm) {
+        const rmObj = JSON.parse(storedRm);
+        document.getElementById('rm-promo-slider').value = rmObj.promo;
+        document.getElementById('rm-standard-slider').value = rmObj.standard;
+      } else {
+        document.getElementById('rm-promo-slider').value = 30;
+        document.getElementById('rm-standard-slider').value = 75;
+      }
+      
+      updateRMSliders();
+      renderPartnerCalendar();
+      renderPartnerReservations();
+    }
+
+    function renderPartnerCalendar() {
+      const days = localCalendars[activePartnerId];
+      if (!days) return;
+      
+      const container = document.getElementById('calendar-grid-container');
+      container.innerHTML = "";
+
+      days.forEach((day, index) => {
+        if (day.closed) {
+          container.innerHTML += `
+            <div class="calendar-day" onclick="openEditDayModal(${index})" style="min-height:100px; display:flex; flex-direction:column; justify-content:space-between; background: rgba(255,255,255,0.01);">
+              <span class="day-date" style="font-size:0.9rem; font-weight:700;">${day.dayNum} ${day.weekDay}</span>
+              <span style="font-size:0.75rem; color:var(--accent-orange); font-weight:bold;">Suspenso</span>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Vendas Bloqueadas</div>
+            </div>
+          `;
+          return;
+        }
+
+        const available = day.capacity - day.sold - day.locks;
+        const availableColor = available === 0 ? 'color: var(--accent-orange);' : 'color: var(--text-main);';
+        const lockHtml = day.locks > 0 ? `<span class="status-badge status-lock" style="font-size:0.65rem; padding: 2px 4px;"><i data-lucide="timer" style="width:8px; height:8px;"></i> ${day.locks} lock</span>` : '';
+
+        container.innerHTML += `
+          <div class="calendar-day" onclick="openEditDayModal(${index})" style="min-height:100px; display:flex; flex-direction:column; justify-content:space-between;">
+            <span class="day-date" style="font-size:0.9rem; font-weight:700;">${day.dayNum} ${day.weekDay}</span>
+            <span style="font-size:0.8rem; color:var(--text-muted); font-weight:500;">R$ ${day.price},00</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <span style="font-size:0.75rem; font-weight:700; ${availableColor}">Disp: ${available}</span>
+              ${lockHtml}
+            </div>
+            <div style="text-align:right; font-size:0.65rem; color:var(--text-muted);">
+              Cota: ${day.sold}/${day.capacity}
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function renderPartnerReservations() {
+      const reservations = getReservations();
+      const filtered = reservations.filter(r => r.partnerId === activePartnerId);
+      const tbody = document.getElementById('partner-reservations-list');
+      tbody.innerHTML = "";
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 16px; color: var(--text-muted);">
+              Nenhuma venda encontrada para esta carteira.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Find partner details to subtract commission
+      const partners = getEstablishments();
+      const p = partners.find(e => e.id === activePartnerId);
+      const commRate = (p && p.commission !== undefined) ? p.commission : 15;
+
+      filtered.forEach(res => {
+        const gross = parseFloat(res.price || 0);
+        const net = gross - (gross * (commRate / 100));
+        
+        let statusBadge = '';
+        if (res.status === 'Check-in Realizado') {
+          statusBadge = `<span class="status-badge" style="background:rgba(16, 185, 129, 0.15); color: #10b981; font-size:0.65rem; padding: 2px 6px;">Utilizado</span>`;
+        } else {
+          statusBadge = `<span class="status-badge status-confirmed" style="font-size:0.65rem; padding: 2px 6px;">Ativo</span>`;
+        }
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${statusBadge}</td>
+            <td style="font-family: monospace; font-weight:700;">${res.code}</td>
+            <td>${res.name}</td>
+            <td style="font-size:0.75rem;">${res.date.split('-').reverse().slice(0,2).join('/')}</td>
+            <td style="text-align: right; font-weight: 700; color: var(--accent-green);">R$ ${net.toFixed(2).replace('.', ',')}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function openEditDayModal(dayIndex) {
+      const dayObj = localCalendars[activePartnerId][dayIndex];
+      document.getElementById('modal-day-index').value = dayIndex;
+      document.getElementById('modal-day-label').innerText = `Configurar Dia ${dayObj.dayNum} - ${dayObj.weekDay}`;
+      document.getElementById('input-day-price').value = dayObj.price || 0;
+      document.getElementById('input-day-capacity').value = dayObj.capacity || 0;
+      document.getElementById('input-day-closed').checked = dayObj.closed || false;
+      document.getElementById('editDayModal').style.display = 'flex';
+    }
+
+    function closeEditDayModal() {
+      document.getElementById('editDayModal').style.display = 'none';
+    }
+
+    function saveEditDayConfig() {
+      const idx = document.getElementById('modal-day-index').value;
+      const price = parseInt(document.getElementById('input-day-price').value);
+      const cap = parseInt(document.getElementById('input-day-capacity').value);
+      const closed = document.getElementById('input-day-closed').checked;
+
+      localCalendars[activePartnerId][idx].price = price;
+      localCalendars[activePartnerId][idx].capacity = cap;
+      localCalendars[activePartnerId][idx].closed = closed;
+      
+      savePartnerCalendars();
+      closeEditDayModal();
+      renderPartnerCalendar();
+    }
+
+    function updateRMSliders() {
+      const promoVal = document.getElementById('rm-promo-slider').value;
+      const standardVal = document.getElementById('rm-standard-slider').value;
+      
+      // Prevent standard being smaller than promo
+      if (parseInt(standardVal) < parseInt(promoVal) + 10) {
+        document.getElementById('rm-standard-slider').value = parseInt(promoVal) + 10;
+      }
+      
+      document.getElementById('slider-promo-label').innerText = `Até ${promoVal}% de ocupação`;
+      document.getElementById('slider-standard-label').innerText = `Até ${document.getElementById('rm-standard-slider').value}% de ocupação`;
+    }
+
+    function saveRMConfiguration() {
+      const promoVal = parseInt(document.getElementById('rm-promo-slider').value);
+      const standardVal = parseInt(document.getElementById('rm-standard-slider').value);
+      
+      localStorage.setItem(`sentinelk_rm_${activePartnerId}`, JSON.stringify({
+        promo: promoVal,
+        standard: standardVal
+      }));
+      
+      alert("Sucesso!\nParâmetros do Revenue Management aplicados ao SentinelK. Os preços flutuarão dinamicamente no portal de acordo com estas faixas.");
+    }
+
+    // Theme selector
+    function initTheme() {
+      const activeTheme = localStorage.getItem('theme') || 'dark';
+      if (activeTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      } else {
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('light-theme')) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-icon-light').style.display = 'none';
+        document.getElementById('theme-icon-dark').style.display = 'block';
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-icon-light').style.display = 'block';
+        document.getElementById('theme-icon-dark').style.display = 'none';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      initializePartnerCalendars();
+      populatePartnerPicker();
+    });
+  </script>
+</body>
+</html>
