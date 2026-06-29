@@ -424,14 +424,14 @@
         const defaultPartners = [
           {
             id: "PART-101",
-            companyName: "Snowland Park S/A",
-            tradeName: "Snowland Park",
-            cnpj: "12.345.678/0001-90",
+            companyName: "Vila da Mônica Gramado S/A",
+            tradeName: "Vila da Mônica",
+            cnpj: "01.573.933/0001-30",
             category: "parque",
-            phone: "(54) 3295-7700",
+            phone: "(54) 3421-2200",
             cep: "95670-000",
-            email: "contato@snowland.com.br",
-            address: "RS-235, 9009",
+            email: "contato@viladamonica.com.br",
+            address: "Rua Carazinho, 170",
             city: "Gramado",
             state: "RS",
             bank: "Banco do Brasil",
@@ -473,30 +473,30 @@
         ];
         localStorage.setItem('sentinelk_establishments', JSON.stringify(defaultPartners));
         return defaultPartners;
-      }
-      return JSON.parse(list);
-    }
-
-    function getActivePartner() {
-      const establishments = getEstablishments();
-      let activeId = localStorage.getItem('active_partner_id');
-      if (!activeId) {
-        activeId = "PART-301";
-        localStorage.setItem('active_partner_id', activeId);
-      }
-      return establishments.find(e => e.id === activeId) || establishments[0];
-    }
-
-    function getReservations() {
-      let list = localStorage.getItem('sentinelk_reservations');
-      if (!list) {
-        const defaultReservations = [
-          { id: "TKT-30101", partnerId: "PART-301", status: "Check-in Realizado", time: "14:30", code: "SNT-77A9B", name: "João Silva", productName: "Fondue Premium", qty: 2, price: 350, date: "2026-05-24" },
-          { id: "TKT-30102", partnerId: "PART-301", status: "Aguardando Cliente", time: "16:45", code: "SNT-88B2C", name: "Maria Oliveira", productName: "Fondue Premium", qty: 4, price: 350, date: "2026-05-24" },
-          { id: "TKT-20101", partnerId: "PART-201", status: "Check-in Realizado", time: "12:00", code: "SNT-55C1A", name: "Carlos Souza", productName: "Suíte Alpina Luxo", qty: 2, price: 680, date: "2026-05-24" },
-          { id: "TKT-10101", partnerId: "PART-101", status: "Aguardando Cliente", time: "10:15", code: "SNT-11D5F", name: "Patricia Lima", productName: "Snowland Passaporte", qty: 3, price: 507, date: "2026-05-24" }
-        ];
-        localStorage.setItem('sentinelk_reservations', JSON.stringify(defaultReservations));
+       }
+       return JSON.parse(list);
+     }
+ 
+     function getActivePartner() {
+       const establishments = getEstablishments();
+       let activeId = localStorage.getItem('active_partner_id');
+       if (!activeId) {
+         activeId = "PART-301";
+         localStorage.setItem('active_partner_id', activeId);
+       }
+       return establishments.find(e => e.id === activeId) || establishments[0];
+     }
+ 
+     function getReservations() {
+       let list = localStorage.getItem('sentinelk_reservations');
+       if (!list) {
+         const defaultReservations = [
+           { id: "TKT-30101", partnerId: "PART-301", status: "Check-in Realizado", time: "14:30", code: "SNT-77A9B", name: "João Silva", productName: "Fondue Premium", qty: 2, price: 350, date: "2026-05-24" },
+           { id: "TKT-30102", partnerId: "PART-301", status: "Aguardando Cliente", time: "16:45", code: "SNT-88B2C", name: "Maria Oliveira", productName: "Fondue Premium", qty: 4, price: 350, date: "2026-05-24" },
+           { id: "TKT-20101", partnerId: "PART-201", status: "Check-in Realizado", time: "12:00", code: "SNT-55C1A", name: "Carlos Souza", productName: "Suíte Alpina Luxo", qty: 2, price: 680, date: "2026-05-24" },
+           { id: "TKT-10101", partnerId: "PART-101", status: "Aguardando Cliente", time: "10:15", code: "SNT-11D5F", name: "Patricia Lima", productName: "Passaporte Vila da Mônica", qty: 3, price: 507, date: "2026-05-24" }
+         ];
+         localStorage.setItem('sentinelk_reservations', JSON.stringify(defaultReservations));
         return defaultReservations;
       }
       return JSON.parse(list);
